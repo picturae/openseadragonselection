@@ -60,7 +60,15 @@
                 (Math.round(this.height*100) / 100) + '@' +
                 (Math.round(this.rotation*100) / 100) +
             ']';
-        }
+        },
+
+        /**
+         * @function
+         * @returns {Number} The rotaion in degrees
+         */
+        getDegreeRotation: function() {
+            return this.rotation * (180/Math.PI);
+        },
     });
 
 }( OpenSeadragon ));

@@ -40,13 +40,12 @@
     }
 
     $.Viewer.prototype.selection = function(options) {
-        if (!this.selectionInstance) {
+        if (!this.selectionInstance || options) {
             options = options || {};
             options.viewer = this;
             this.selectionInstance = new $.Selection(options);
-        } else {
-            this.selectionInstance.refresh(options);
         }
+        return this.selectionInstance;
     };
 
 
@@ -68,7 +67,7 @@
 
             isSelecting:          false,
             rect:                 null,
-            startNew:             true
+            rectDone:             true,
         }, options );
 
         if (!this.element) {
@@ -85,13 +84,16 @@
             dragEndHandler:           $.delegate( this, onOutsideDragEnd ),
             keyHandler:               $.delegate( this, onKeyPress ),
             startDisabled:            !this.isSelecting,
+            clickHandler:             function() {console.log('turtle');},
         });
 
         this.innerTracker = new $.MouseTracker({
             element:                  this.element,
             dragHandler:              $.delegate( this, onInsideDrag ),
             dragEndHandler:           $.delegate( this, onInsideDragEnd ),
-            // keyHandler:               $.delegate( this, onKeyPress ),
+            keyHandler:               $.delegate( this, onKeyPress ),
+            scrollHandler:            $.delegate( this.viewer, this.viewer.innerTracker.scrollHandler ),
+            pinchHandler:             $.delegate( this.viewer, this.viewer.innerTracker.pinchHandler ),
         });
 
         if ( this.keyboardShortcut ) {
@@ -147,7 +149,7 @@
         },
 
         draw: function() {
-            this.overlay.update(fixRect(this.rect));
+            this.overlay.update(normalizeRect(this.rect));
             this.overlay.drawHTML(this.viewer.container, this.viewer.viewport);
         },
 
@@ -155,24 +157,38 @@
             this.overlay.destroy();
             this.rect = null;
         },
+
+        getAngleFromCenter: function(point) {
+            var diff = point.minus(this.rect.getCenter());
+            return Math.atan2(diff.x, diff.y);
+        }
     };
 
     function onOutsideDrag(e) {
+    this.outerTracker.setTracking(true);
+        var start = new $.Point(e.position.x - e.delta.x, e.position.y - e.delta.y);
+        start = this.viewer.viewport.pointFromPixel(start, true);
         var end = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
-        if (!this.rect || this.startNew) {
-            this.startNew = false;
-            var start = new $.Point(e.position.x - e.delta.x, e.position.y - e.delta.y);
-            start = this.viewer.viewport.pointFromPixel(start, true);
+        if (!this.rect) {
             this.rect = new $.SelectionRect(start.x, start.y, end.x, end.y);
+            this.rectDone = false;
+        } else if (this.rectDone) {
+            // rotate
+            var angle1 = this.getAngleFromCenter(start);
+            end = this.viewer.viewport.pointFromPixel(e.position, true);
+            var angle2 = this.getAngleFromCenter(end);
+            this.rect.rotation = (this.rect.rotation + angle1 - angle2) % Math.PI;
         } else {
             this.rect.width += end.x;
             this.rect.height += end.y;
         }
         this.draw();
+        return true;
     }
 
     function onOutsideDragEnd() {
-        this.startNew = true;
+        this.rectDone = true;
+        return true;
     }
 
     function onInsideDrag(e) {
@@ -181,24 +197,28 @@
         this.rect.x += delta.x;
         this.rect.y += delta.y;
         this.draw();
+        return true;
     }
 
     function onInsideDragEnd() {
         $.removeClass(this.element, 'dragging');
+        return true;
     }
 
     function onKeyPress(e) {
         var key = e.keyCode ? e.keyCode : e.charCode;
-        if (key === 13) {
-            this.viewer.raiseEvent( 'selection', fixRect(this.rect) );
+        if (key === 13 && this.rect) {
+            console.log(normalizeRect(this.rect));
+            this.viewer.raiseEvent( 'selection', normalizeRect(this.rect) );
             this.undraw();
         } else if (String.fromCharCode(key) === this.keyboardShortcut) {
             this.toggleState();
         }
+        return true;
     }
 
-    function fixRect(rect) {
-        var fixed = new $.SelectionRect(rect.x, rect.y, rect.width, rect.height);
+    function normalizeRect(rect) {
+        var fixed = rect.clone();
         if (fixed.width < 0) {
             fixed.x += fixed.width;
             fixed.width *= -1;
@@ -207,6 +227,7 @@
             fixed.y += fixed.height;
             fixed.height *= -1;
         }
+        // fixed.rotation %= Math.PI;
         return fixed;
     }
 
