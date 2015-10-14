@@ -12,20 +12,20 @@
      * @param {Number} y The vector component 'y'.
      * @param {Number} width The vector component 'height'.
      * @param {Number} height The vector component 'width'.
-     * @param {Number} rotation The rotation in degrees
+     * @param {Number} rotation The rotation in radians
      */
     $.SelectionRect = function( x, y, width, height, rotation ) {
         $.Rect.apply( this, [ x, y, width, height ] );
 
         /**
-         * The rotation in degrees
+         * The rotation in radians
          * @member {Number} rotation
          * @memberof OpenSeadragon.SelectionRect#
          */
         this.rotation = rotation || 0;
     };
 
-    $.extend( $.SelectionRect.prototype, $.Rect.prototype, /** @lends OpenSeadragon.SelectionRect.prototype */{
+    $.SelectionRect.prototype = $.extend( Object.create($.Rect.prototype), {
 
         /**
          * @function

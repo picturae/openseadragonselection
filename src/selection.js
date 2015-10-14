@@ -72,8 +72,11 @@
         }, options );
 
         if (!this.element) {
-            this.element = $.makeNeutralElement( 'div' );
-            this.element.style.background = '#000';
+            this.element = $.makeNeutralElement('div');
+            this.element.style.background = '#000'; // @TEMP
+        }
+        if (!this.overlay) {
+            this.overlay = new $.SelectionOverlay(this.element, this.rect || new $.SelectionRect());
         }
 
         this.outerTracker = new $.MouseTracker({
@@ -134,16 +137,24 @@
         enable: function() {
             this.isSelecting = true;
             this.outerTracker.setTracking(true);
-            this.viewer.removeOverlay(this.element);
-            this.rect = null;
+            this.undraw();
         },
 
         disable: function() {
             this.isSelecting = false;
             this.outerTracker.setTracking(false);
-            this.viewer.removeOverlay(this.element);
+            this.undraw();
+        },
+
+        draw: function() {
+            this.overlay.update(fixRect(this.rect));
+            this.overlay.drawHTML(this.viewer.container, this.viewer.viewport);
+        },
+
+        undraw: function() {
+            this.overlay.destroy();
             this.rect = null;
-        }
+        },
     };
 
     function onOutsideDrag(e) {
@@ -153,12 +164,11 @@
             var start = new $.Point(e.position.x - e.delta.x, e.position.y - e.delta.y);
             start = this.viewer.viewport.pointFromPixel(start, true);
             this.rect = new $.SelectionRect(start.x, start.y, end.x, end.y);
-            this.viewer.addOverlay(this.element, fixRect(this.rect));
         } else {
             this.rect.width += end.x;
             this.rect.height += end.y;
-            this.viewer.updateOverlay(this.element, fixRect(this.rect));
         }
+        this.draw();
     }
 
     function onOutsideDragEnd() {
@@ -166,31 +176,29 @@
     }
 
     function onInsideDrag(e) {
-        if (this.element.className.indexOf(' dragging ') === -1) {
-            this.element.className += ' dragging ';
-        }
+        $.addClass(this.element, 'dragging');
         var delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
         this.rect.x += delta.x;
         this.rect.y += delta.y;
-        this.viewer.updateOverlay(this.element, fixRect(this.rect));
+        this.draw();
     }
 
     function onInsideDragEnd() {
-        this.element.className = this.element.className.replace(' dragging ', '');
+        $.removeClass(this.element, 'dragging');
     }
 
     function onKeyPress(e) {
         var key = e.keyCode ? e.keyCode : e.charCode;
         if (key === 13) {
             this.viewer.raiseEvent( 'selection', fixRect(this.rect) );
-            this.viewer.removeOverlay(this.element);
+            this.undraw();
         } else if (String.fromCharCode(key) === this.keyboardShortcut) {
             this.toggleState();
         }
     }
 
     function fixRect(rect) {
-        var fixed = new $.Rect(rect.x, rect.y, rect.width, rect.height);
+        var fixed = new $.SelectionRect(rect.x, rect.y, rect.width, rect.height);
         if (fixed.width < 0) {
             fixed.x += fixed.width;
             fixed.width *= -1;
