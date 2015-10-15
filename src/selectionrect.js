@@ -69,6 +69,15 @@
         getDegreeRotation: function() {
             return this.rotation * (180/Math.PI);
         },
+
+        /**
+         * @function
+         * @returns {Number} The angle in radians
+         */
+        getAngleFromCenter: function(point) {
+            var diff = point.minus(this.getCenter());
+            return Math.atan2(diff.x, diff.y);
+        },
     });
 
 }( OpenSeadragon ));

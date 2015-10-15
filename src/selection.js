@@ -72,28 +72,69 @@
 
         if (!this.element) {
             this.element = $.makeNeutralElement('div');
-            this.element.style.background = '#000'; // @TEMP
+            this.element.style.background = 'rgba(0, 0, 0, 0.1)';
         }
+        if (!this.borders) {
+            this.element = $.makeNeutralElement('div');
+            this.element.style.background = 'rgba(0, 0, 0, 0.1)';
+        }
+        this.borders = this.borders || [];
+        var handle;
+        for (var i = 0; i < 4; i++) {
+            if (!this.borders[i]) {
+                this.borders[i]                  = $.makeNeutralElement('div');
+                this.borders[i].className        = 'border-' + i;
+                this.borders[i].style.position   = 'absolute';
+                this.borders[i].style.width      = '1px';
+                this.borders[i].style.height     = '1px';
+                this.borders[i].style.background = '#fff';
+            }
+
+            handle                  = $.makeNeutralElement('div');
+            handle.className        = 'border-' + i + '-handle';
+            handle.style.position   = 'absolute';
+            handle.style.top        = '50%';
+            handle.style.left       = '50%';
+            handle.style.width      = '6px';
+            handle.style.height     = '6px';
+            handle.style.margin     = '-4px 0 0 -4px';
+            handle.style.background = '#000';
+            new $.MouseTracker({
+                element:     this.borders[i],
+                dragHandler: onBorderDrag.bind(this, i),
+            });
+
+            this.borders[i].appendChild(handle);
+            this.element.appendChild(this.borders[i]);
+        }
+        this.borders[0].style.top = 0;
+        this.borders[0].style.width = '100%';
+        this.borders[1].style.right = 0;
+        this.borders[1].style.height = '100%';
+        this.borders[2].style.bottom = 0;
+        this.borders[2].style.width = '100%';
+        this.borders[3].style.left = 0;
+        this.borders[3].style.height = '100%';
+
         if (!this.overlay) {
             this.overlay = new $.SelectionOverlay(this.element, this.rect || new $.SelectionRect());
         }
 
         this.outerTracker = new $.MouseTracker({
-            element:                  this.viewer.drawer.canvas,
-            dragHandler:              $.delegate( this, onOutsideDrag ),
-            dragEndHandler:           $.delegate( this, onOutsideDragEnd ),
-            keyHandler:               $.delegate( this, onKeyPress ),
-            startDisabled:            !this.isSelecting,
-            clickHandler:             function() {console.log('turtle');},
+            element:        this.viewer.drawer.canvas,
+            dragHandler:    $.delegate( this, onOutsideDrag ),
+            dragEndHandler: $.delegate( this, onOutsideDragEnd ),
+            keyHandler:     $.delegate( this, onKeyPress ),
+            startDisabled:  !this.isSelecting,
         });
 
         this.innerTracker = new $.MouseTracker({
-            element:                  this.element,
-            dragHandler:              $.delegate( this, onInsideDrag ),
-            dragEndHandler:           $.delegate( this, onInsideDragEnd ),
-            keyHandler:               $.delegate( this, onKeyPress ),
-            scrollHandler:            $.delegate( this.viewer, this.viewer.innerTracker.scrollHandler ),
-            pinchHandler:             $.delegate( this.viewer, this.viewer.innerTracker.pinchHandler ),
+            element:        this.element,
+            dragHandler:    $.delegate( this, onInsideDrag ),
+            dragEndHandler: $.delegate( this, onInsideDragEnd ),
+            keyHandler:     $.delegate( this, onKeyPress ),
+            scrollHandler:  $.delegate( this.viewer, this.viewer.innerTracker.scrollHandler ),
+            pinchHandler:   $.delegate( this.viewer, this.viewer.innerTracker.pinchHandler ),
         });
 
         if ( this.keyboardShortcut ) {
@@ -157,15 +198,9 @@
             this.overlay.destroy();
             this.rect = null;
         },
-
-        getAngleFromCenter: function(point) {
-            var diff = point.minus(this.rect.getCenter());
-            return Math.atan2(diff.x, diff.y);
-        }
     };
 
     function onOutsideDrag(e) {
-    this.outerTracker.setTracking(true);
         var start = new $.Point(e.position.x - e.delta.x, e.position.y - e.delta.y);
         start = this.viewer.viewport.pointFromPixel(start, true);
         var end = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
@@ -174,9 +209,9 @@
             this.rectDone = false;
         } else if (this.rectDone) {
             // rotate
-            var angle1 = this.getAngleFromCenter(start);
+            var angle1 = this.rect.getAngleFromCenter(start);
             end = this.viewer.viewport.pointFromPixel(e.position, true);
-            var angle2 = this.getAngleFromCenter(end);
+            var angle2 = this.rect.getAngleFromCenter(end);
             this.rect.rotation = (this.rect.rotation + angle1 - angle2) % Math.PI;
         } else {
             this.rect.width += end.x;
@@ -202,6 +237,45 @@
 
     function onInsideDragEnd() {
         $.removeClass(this.element, 'dragging');
+        return true;
+    }
+
+    function onBorderDrag(border, e) {
+        var delta = e.delta;
+        var rotation = this.rect.getDegreeRotation();
+        if (rotation !== 0) {
+            // adjust vector
+            delta = delta.rotate(-1 * rotation, new $.Point(0, 0));
+        }
+        delta = this.viewer.viewport.deltaPointsFromPixels(delta, true);
+        var center = this.rect.getCenter();
+        switch (border) {
+            case 0:
+                this.rect.y += delta.y;
+                this.rect.height -= delta.y;
+                break;
+            case 1:
+                this.rect.width += delta.x;
+                break;
+            case 2:
+                this.rect.height += delta.y;
+                break;
+            case 3:
+                this.rect.x += delta.x;
+                this.rect.width -= delta.x;
+                break;
+        }
+        if (rotation !== 0) {
+            // calc center deviation
+            var newCenter = this.rect.getCenter();
+            // rotate new center around old
+            var target = newCenter.rotate(rotation, center);
+            // adjust new center
+            delta = target.minus(newCenter);
+            this.rect.x += delta.x;
+            this.rect.y += delta.y;
+        }
+        this.draw();
         return true;
     }
 
