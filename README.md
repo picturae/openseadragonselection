@@ -4,6 +4,8 @@ An OpenSeadragon plugin that provides functionality for selecting a rectangular 
 
 ## Usage
 
+Include `dist/openseadragonselection.js` after OpenSeadragon in your html. Then after you create a viewer:
+
     viewer.selection(options);
 
 ## Options
