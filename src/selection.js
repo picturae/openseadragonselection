@@ -67,7 +67,7 @@
 
             isSelecting:          false,
             rect:                 null,
-            rectDone:             true,
+            rectDone:             !!options.rect,
         }, options );
 
         if (!this.element) {
@@ -164,6 +164,11 @@
         }
 
         this.viewer.addHandler('selection', this.onSelection);
+
+        this.viewer.addHandler('open', this.draw.bind(this));
+        this.viewer.addHandler('animation', this.draw.bind(this));
+        this.viewer.addHandler('resize', this.draw.bind(this));
+        this.viewer.addHandler('rotate', this.draw.bind(this));
     };
 
     $.Selection.prototype = /** @lends OpenSeadragon.Selection.prototype */{
@@ -190,8 +195,10 @@
         },
 
         draw: function() {
-            this.overlay.update(normalizeRect(this.rect));
-            this.overlay.drawHTML(this.viewer.container, this.viewer.viewport);
+            if (this.rect) {
+                this.overlay.update(normalizeRect(this.rect));
+                this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
+            }
         },
 
         undraw: function() {
@@ -218,12 +225,10 @@
             this.rect.height += end.y;
         }
         this.draw();
-        return true;
     }
 
     function onOutsideDragEnd() {
         this.rectDone = true;
-        return true;
     }
 
     function onInsideDrag(e) {
@@ -232,12 +237,10 @@
         this.rect.x += delta.x;
         this.rect.y += delta.y;
         this.draw();
-        return true;
     }
 
     function onInsideDragEnd() {
         $.removeClass(this.element, 'dragging');
-        return true;
     }
 
     function onBorderDrag(border, e) {
@@ -276,7 +279,6 @@
             this.rect.y += delta.y;
         }
         this.draw();
-        return true;
     }
 
     function onKeyPress(e) {
@@ -288,7 +290,6 @@
         } else if (String.fromCharCode(key) === this.keyboardShortcut) {
             this.toggleState();
         }
-        return true;
     }
 
     function normalizeRect(rect) {
