@@ -58,16 +58,17 @@
     $.Selection = function ( options ) {
 
         $.extend( true, this, {
-            //internal state properties
+            // internal state properties
             viewer:               null,
+            isSelecting:          false,
+            rectDone:             !!options.rect,
+
+            // options
             element:              null,
             showSelectionControl: true,
             keyboardShortcut:     'c',
             rect:                 null,
             onSelection:          function() {},
-
-            isSelecting:          false,
-            rectDone:             !!options.rect,
         }, options );
 
         if (!this.element) {
