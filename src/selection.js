@@ -32,7 +32,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-(function( $ ) {
+(function($) {
     'use strict';
 
     if (!$.version || $.version.major < 2) {
@@ -284,8 +284,16 @@
     function onKeyPress(e) {
         var key = e.keyCode ? e.keyCode : e.charCode;
         if (key === 13 && this.rect) {
-            console.log(normalizeRect(this.rect));
-            this.viewer.raiseEvent( 'selection', normalizeRect(this.rect) );
+            var result = this.viewer.viewport.viewportToImageRectangle(normalizeRect(this.rect));
+            result = new $.SelectionRect(
+                Math.round(result.x),
+                Math.round(result.y),
+                Math.round(result.width),
+                Math.round(result.height),
+                this.rect.rotation
+            );
+            console.log(result);
+            this.viewer.raiseEvent('selection', result);
             this.undraw();
         } else if (String.fromCharCode(key) === this.keyboardShortcut) {
             this.toggleState();
@@ -306,4 +314,4 @@
         return fixed;
     }
 
-})( OpenSeadragon );
+})(OpenSeadragon);
