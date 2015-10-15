@@ -63,10 +63,10 @@
             element:              null,
             showSelectionControl: true,
             keyboardShortcut:     'c',
+            rect:                 null,
             onSelection:          function() {},
 
             isSelecting:          false,
-            rect:                 null,
             rectDone:             !!options.rect,
         }, options );
 
