@@ -1,37 +1,3 @@
-/*
- * OpenSeadragon - full-screen support functions
- *
- * Copyright (C) 2009 CodePlex Foundation
- * Copyright (C) 2010-2013 OpenSeadragon contributors
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- * - Redistributions of source code must retain the above copyright notice,
- *   this list of conditions and the following disclaimer.
- *
- * - Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the distribution.
- *
- * - Neither the name of CodePlex Foundation nor the names of its
- *   contributors may be used to endorse or promote products derived from
- *   this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 (function($) {
     'use strict';
 
@@ -59,17 +25,42 @@
 
         $.extend( true, this, {
             // internal state properties
-            viewer:               null,
-            isSelecting:          false,
-            rectDone:             !!options.rect,
+            viewer:                  null,
+            isSelecting:             false,
+            rectDone:                !!options.rect,
 
             // options
-            element:              null,
-            showSelectionControl: true,
-            keyboardShortcut:     'c',
-            rect:                 null,
-            onSelection:          function() {},
+            element:                 null,
+            toggleButton:            null,
+            showSelectionControl:    true,
+            showConfirmDenyButtons:  true,
+            styleConfirmDenyButtons: true,
+            keyboardShortcut:        'c',
+            rect:                    null,
+            onSelection:             function() {},
         }, options );
+
+        this.navImages = this.navImages || {
+            selection: {
+                REST:   'selection_rest.png',
+                GROUP:  'selection_grouphover.png',
+                HOVER:  'selection_hover.png',
+                DOWN:   'selection_pressed.png'
+            },
+            selectionConfirm: {
+                REST:   'selection_confirm_rest.png',
+                GROUP:  'selection_confirm_grouphover.png',
+                HOVER:  'selection_confirm_hover.png',
+                DOWN:   'selection_confirm_pressed.png'
+            },
+            selectionCancel: {
+                REST:   'selection_cancel_rest.png',
+                GROUP:  'selection_cancel_grouphover.png',
+                HOVER:  'selection_cancel_hover.png',
+                DOWN:   'selection_cancel_pressed.png'
+            },
+        };
+        $.extend( true, this.navImages, this.viewer.navImages );
 
         if (!this.element) {
             this.element = $.makeNeutralElement('div');
@@ -147,21 +138,72 @@
                 false
             );
         }
-        if ( this.showSelectionControl ) {
-            // @TODO
-            // this.viewer.buttons.push( this.selectionButton = new $.Button({
-            //     element:    null,
-            //     clickTimeThreshold: this.viewer.clickTimeThreshold,
-            //     clickDistThreshold: this.viewer.clickDistThreshold,
-            //     tooltip:    $.getString( "Tooltips.RotateRight" ),
-            //     srcRest:    resolveUrl( this.viewer.prefixUrl, this.viewer.navImages.rotateright.REST ),
-            //     srcGroup:   resolveUrl( this.viewer.prefixUrl, this.viewer.navImages.rotateright.GROUP ),
-            //     srcHover:   resolveUrl( this.viewer.prefixUrl, this.viewer.navImages.rotateright.HOVER ),
-            //     srcDown:    resolveUrl( this.viewer.prefixUrl, this.viewer.navImages.rotateright.DOWN ),
-            //     onRelease:  this.toggleState.bind( this ),
-            //     onFocus:    $.delegate( this.viewer, onFocus ),
-            //     onBlur:     $.delegate( this.viewer, onBlur )
-            // }));
+
+        var prefix = this.viewer.prefixUrl || '';
+        var anyButton = this.viewer.buttons.buttons[0];
+        var onFocusHandler = anyButton ? anyButton.onFocus : null;
+        var onBlurHandler = anyButton ? anyButton.onBlur : null;
+        if (this.showSelectionControl) {
+            this.toggleButton = new $.Button({
+                element:    this.toggleButton ? $.getElement( this.toggleButton ) : null,
+                clickTimeThreshold: this.viewer.clickTimeThreshold,
+                clickDistThreshold: this.viewer.clickDistThreshold,
+                tooltip:    $.getString('Tooltips.SelectionToggle') || 'Toggle selection',
+                srcRest:    prefix + this.navImages.selection.REST,
+                srcGroup:   prefix + this.navImages.selection.GROUP,
+                srcHover:   prefix + this.navImages.selection.HOVER,
+                srcDown:    prefix + this.navImages.selection.DOWN,
+                onRelease:  this.toggleState.bind( this ),
+                onFocus:    onFocusHandler,
+                onBlur:     onBlurHandler
+            });
+            this.viewer.buttons.buttons.push(this.toggleButton);
+            this.viewer.buttons.element.appendChild(this.toggleButton.element);
+        }
+        if (this.showConfirmDenyButtons) {
+            this.confirmButton = new $.Button({
+                element:    this.confirmButton ? $.getElement( this.confirmButton ) : null,
+                clickTimeThreshold: this.viewer.clickTimeThreshold,
+                clickDistThreshold: this.viewer.clickDistThreshold,
+                tooltip:    $.getString('Tooltips.SelectionConfirm') || 'Confirm selection',
+                srcRest:    prefix + this.navImages.selectionConfirm.REST,
+                srcGroup:   prefix + this.navImages.selectionConfirm.GROUP,
+                srcHover:   prefix + this.navImages.selectionConfirm.HOVER,
+                srcDown:    prefix + this.navImages.selectionConfirm.DOWN,
+                onRelease:  this.confirm.bind( this ),
+                onFocus:    onFocusHandler,
+                onBlur:     onBlurHandler
+            });
+            var confirm = this.confirmButton.element;
+            this.element.appendChild(confirm);
+
+            this.cancelButton = new $.Button({
+                element:    this.cancelButton ? $.getElement( this.cancelButton ) : null,
+                clickTimeThreshold: this.viewer.clickTimeThreshold,
+                clickDistThreshold: this.viewer.clickDistThreshold,
+                tooltip:    $.getString('Tooltips.SelectionConfirm') || 'Cancel selection',
+                srcRest:    prefix + this.navImages.selectionCancel.REST,
+                srcGroup:   prefix + this.navImages.selectionCancel.GROUP,
+                srcHover:   prefix + this.navImages.selectionCancel.HOVER,
+                srcDown:    prefix + this.navImages.selectionCancel.DOWN,
+                onRelease:  this.cancel.bind( this ),
+                onFocus:    onFocusHandler,
+                onBlur:     onBlurHandler
+            });
+            var cancel = this.cancelButton.element;
+            this.element.appendChild(cancel);
+
+            if (this.styleConfirmDenyButtons) {
+                confirm.style.position = 'absolute';
+                confirm.style.top = '50%';
+                confirm.style.left = '50%';
+                confirm.style.transform = 'translate(-100%, -50%)';
+
+                cancel.style.position = 'absolute';
+                cancel.style.top = '50%';
+                cancel.style.left = '50%';
+                cancel.style.transform = 'translate(0, -50%)';
+            }
         }
 
         this.viewer.addHandler('selection', this.onSelection);
@@ -172,7 +214,7 @@
         this.viewer.addHandler('rotate', this.draw.bind(this));
     };
 
-    $.Selection.prototype = /** @lends OpenSeadragon.Selection.prototype */{
+    $.extend( $.Selection.prototype, $.ControlDock.prototype, /** @lends OpenSeadragon.Selection.prototype */{
 
         toggleState: function() {
             $.console.log('onSelectionToggle');
@@ -181,18 +223,21 @@
             } else {
                 this.enable();
             }
+            return this;
         },
 
         enable: function() {
             this.isSelecting = true;
             this.outerTracker.setTracking(true);
             this.undraw();
+            return this;
         },
 
         disable: function() {
             this.isSelecting = false;
             this.outerTracker.setTracking(false);
             this.undraw();
+            return this;
         },
 
         draw: function() {
@@ -200,13 +245,36 @@
                 this.overlay.update(normalizeRect(this.rect));
                 this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
             }
+            return this;
         },
 
         undraw: function() {
             this.overlay.destroy();
             this.rect = null;
+            return this;
         },
-    };
+
+        confirm: function() {
+            if (this.rect) {
+                var result = this.viewer.viewport.viewportToImageRectangle(normalizeRect(this.rect));
+                result = new $.SelectionRect(
+                    Math.round(result.x),
+                    Math.round(result.y),
+                    Math.round(result.width),
+                    Math.round(result.height),
+                    this.rect.rotation
+                );
+                console.log(result);
+                this.viewer.raiseEvent('selection', result);
+                this.undraw();
+            }
+            return this;
+        },
+
+        cancel: function() {
+            return this.undraw();
+        },
+    });
 
     function onOutsideDrag(e) {
         var start = new $.Point(e.position.x - e.delta.x, e.position.y - e.delta.y);
@@ -284,18 +352,8 @@
 
     function onKeyPress(e) {
         var key = e.keyCode ? e.keyCode : e.charCode;
-        if (key === 13 && this.rect) {
-            var result = this.viewer.viewport.viewportToImageRectangle(normalizeRect(this.rect));
-            result = new $.SelectionRect(
-                Math.round(result.x),
-                Math.round(result.y),
-                Math.round(result.width),
-                Math.round(result.height),
-                this.rect.rotation
-            );
-            console.log(result);
-            this.viewer.raiseEvent('selection', result);
-            this.undraw();
+        if (key === 13) {
+            this.confirm();
         } else if (String.fromCharCode(key) === this.keyboardShortcut) {
             this.toggleState();
         }
