@@ -233,6 +233,7 @@
             this.isSelecting = true;
             this.outerTracker.setTracking(true);
             this.undraw();
+            this.viewer.raiseEvent('selection_toggle', true);
             return this;
         },
 
@@ -240,6 +241,7 @@
             this.isSelecting = false;
             this.outerTracker.setTracking(false);
             this.undraw();
+            this.viewer.raiseEvent('selection_toggle', false);
             return this;
         },
 
@@ -275,6 +277,7 @@
         },
 
         cancel: function() {
+            this.viewer.raiseEvent('selection_cancel', false);
             return this.undraw();
         },
     });
