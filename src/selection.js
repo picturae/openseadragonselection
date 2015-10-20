@@ -66,10 +66,6 @@
             this.element = $.makeNeutralElement('div');
             this.element.style.background = 'rgba(0, 0, 0, 0.1)';
         }
-        if (!this.borders) {
-            this.element = $.makeNeutralElement('div');
-            this.element.style.background = 'rgba(0, 0, 0, 0.1)';
-        }
         this.borders = this.borders || [];
         var handle;
         for (var i = 0; i < 4; i++) {
@@ -247,7 +243,7 @@
 
         draw: function() {
             if (this.rect) {
-                this.overlay.update(normalizeRect(this.rect));
+                this.overlay.update(this.rect.normalize());
                 this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
             }
             return this;
@@ -261,16 +257,11 @@
 
         confirm: function() {
             if (this.rect) {
-                var result = this.viewer.viewport.viewportToImageRectangle(normalizeRect(this.rect));
-                result = new $.SelectionRect(
-                    Math.round(result.x),
-                    Math.round(result.y),
-                    Math.round(result.width),
-                    Math.round(result.height),
-                    this.rect.rotation
-                );
-                console.log(result);
-                this.viewer.raiseEvent('selection', result);
+                var result = this.rect.normalize();
+                var real = this.viewer.viewport.viewportToImageRectangle(result);
+                real = $.SelectionRect.fromRect(real).round();
+                real.rotation = result.rotation;
+                this.viewer.raiseEvent('selection', real);
                 this.undraw();
             }
             return this;
@@ -367,20 +358,6 @@
         } else if (String.fromCharCode(key) === this.keyboardShortcut) {
             this.toggleState();
         }
-    }
-
-    function normalizeRect(rect) {
-        var fixed = rect.clone();
-        if (fixed.width < 0) {
-            fixed.x += fixed.width;
-            fixed.width *= -1;
-        }
-        if (fixed.height < 0) {
-            fixed.y += fixed.height;
-            fixed.height *= -1;
-        }
-        // fixed.rotation %= Math.PI;
-        return fixed;
     }
 
 })(OpenSeadragon);

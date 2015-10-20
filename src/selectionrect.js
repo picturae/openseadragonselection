@@ -25,6 +25,15 @@
         this.rotation = rotation || 0;
     };
 
+    $.SelectionRect.fromRect = function(rect) {
+        return new $.SelectionRect(
+            rect.x,
+            rect.y,
+            rect.width,
+            rect.height
+        );
+    };
+
     $.SelectionRect.prototype = $.extend( Object.create($.Rect.prototype), {
 
         /**
@@ -62,6 +71,13 @@
             ']';
         },
 
+        swapWidthHeight: function() {
+            var swapped = this.clone();
+            swapped.width = this.height;
+            swapped.height = this.width;
+            return swapped;
+        },
+
         /**
          * @function
          * @returns {Number} The rotaion in degrees
@@ -77,6 +93,59 @@
         getAngleFromCenter: function(point) {
             var diff = point.minus(this.getCenter());
             return Math.atan2(diff.x, diff.y);
+        },
+
+        /**
+         * Rounds pixel coordinates
+         * @function
+         * @returns {SelectionRect} The altered rect
+         */
+        round: function() {
+            return new $.SelectionRect(
+                Math.round(this.x),
+                Math.round(this.y),
+                Math.round(this.width),
+                Math.round(this.height),
+                this.rotation
+            );
+        },
+
+        /**
+         * Fixes negative width/height, rotation larger than PI
+         * @function
+         * @returns {SelectionRect} The normalized rect
+         */
+        normalize: function() {
+            var fixed = this.clone();
+            if (fixed.width < 0) {
+                fixed.x += fixed.width;
+                fixed.width *= -1;
+            }
+            if (fixed.height < 0) {
+                fixed.y += fixed.height;
+                fixed.height *= -1;
+            }
+            fixed.rotation %= Math.PI;
+            return fixed;
+        },
+
+        /**
+         * Reduces rotation to within [-45, 45] degrees by swapping width & height
+         * @function
+         * @returns {SelectionRect} The altered rect
+         */
+        reduceRotation: function() {
+            var reduced;
+            if (this.rotation < Math.PI / (-4)) {
+                reduced = this.swapWidthHeight();
+                reduced.rotation += Math.PI / 2;
+            } else if (this.rotation > Math.PI / 4) {
+                reduced = this.swapWidthHeight();
+                reduced.rotation -= Math.PI / 2;
+            } else {
+                reduced = this.clone();
+            }
+            return reduced;
         },
     });
 
