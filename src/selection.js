@@ -113,29 +113,33 @@
             this.overlay = new $.SelectionOverlay(this.element, this.rect || new $.SelectionRect());
         }
 
-        this.outerTracker = new $.MouseTracker({
-            element:        this.viewer.drawer.canvas,
-            dragHandler:    $.delegate( this, onOutsideDrag ),
-            dragEndHandler: $.delegate( this, onOutsideDragEnd ),
-            keyHandler:     $.delegate( this, onKeyPress ),
-            startDisabled:  !this.isSelecting,
-        });
-
         this.innerTracker = new $.MouseTracker({
-            element:        this.element,
-            dragHandler:    $.delegate( this, onInsideDrag ),
-            dragEndHandler: $.delegate( this, onInsideDragEnd ),
-            keyHandler:     $.delegate( this, onKeyPress ),
-            scrollHandler:  $.delegate( this.viewer, this.viewer.innerTracker.scrollHandler ),
-            pinchHandler:   $.delegate( this.viewer, this.viewer.innerTracker.pinchHandler ),
+            element:            this.element,
+            clickTimeThreshold: this.viewer.clickTimeThreshold,
+            clickDistThreshold: this.viewer.clickDistThreshold,
+            dragHandler:        $.delegate( this, onInsideDrag ),
+            dragEndHandler:     $.delegate( this, onInsideDragEnd ),
+            // keyHandler:         $.delegate( this, onKeyPress ),
+            clickHandler:       $.delegate( this, onClick ),
+            scrollHandler:      $.delegate( this.viewer, this.viewer.innerTracker.scrollHandler ),
+            pinchHandler:       $.delegate( this.viewer, this.viewer.innerTracker.pinchHandler ),
         });
 
-        if ( this.keyboardShortcut ) {
-            // var cb = this.viewer.innerTracker
+        this.outerTracker = new $.MouseTracker({
+            element:            this.viewer.canvas,
+            clickTimeThreshold: this.viewer.clickTimeThreshold,
+            clickDistThreshold: this.viewer.clickDistThreshold,
+            dragHandler:        $.delegate( this, onOutsideDrag ),
+            dragEndHandler:     $.delegate( this, onOutsideDragEnd ),
+            clickHandler:       $.delegate( this, onClick ),
+            startDisabled:      !this.isSelecting,
+        });
+
+        if (this.keyboardShortcut) {
             $.addEvent(
                 this.viewer.container,
                 'keypress',
-                $.delegate( this, onKeyPress ),
+                $.delegate(this, onKeyPress),
                 false
             );
         }
@@ -221,29 +225,24 @@
     $.extend( $.Selection.prototype, $.ControlDock.prototype, /** @lends OpenSeadragon.Selection.prototype */{
 
         toggleState: function() {
-            $.console.log('onSelectionToggle');
-            if (this.isSelecting) {
-                this.disable();
-            } else {
-                this.enable();
-            }
+            return this.setState(!this.isSelecting);
+        },
+
+        setState: function(enabled) {
+            this.isSelecting = enabled;
+            this.viewer.innerTracker.setTracking(!enabled);
+            this.outerTracker.setTracking(enabled);
+            enabled ? this.draw() : this.undraw();
+            this.viewer.raiseEvent('selection_toggle', enabled);
             return this;
         },
 
         enable: function() {
-            this.isSelecting = true;
-            this.outerTracker.setTracking(true);
-            this.undraw();
-            this.viewer.raiseEvent('selection_toggle', true);
-            return this;
+            return this.setState(true);
         },
 
         disable: function() {
-            this.isSelecting = false;
-            this.outerTracker.setTracking(false);
-            this.undraw();
-            this.viewer.raiseEvent('selection_toggle', false);
-            return this;
+            return this.setState(false);
         },
 
         draw: function() {
@@ -305,6 +304,10 @@
 
     function onOutsideDragEnd() {
         this.rectDone = true;
+    }
+
+    function onClick() {
+        this.viewer.canvas.focus();
     }
 
     function onInsideDrag(e) {
