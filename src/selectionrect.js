@@ -75,6 +75,8 @@
             var swapped = this.clone();
             swapped.width = this.height;
             swapped.height = this.width;
+            swapped.x += (this.width - this.height) / 2;
+            swapped.y += (this.height - this.width) / 2;
             return swapped;
         },
 
