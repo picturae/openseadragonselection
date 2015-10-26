@@ -229,7 +229,7 @@
             this.viewer.innerTracker.setTracking(!enabled);
             this.outerTracker.setTracking(enabled);
             enabled ? this.draw() : this.undraw();
-            this.viewer.raiseEvent('selection_toggle', enabled);
+            this.viewer.raiseEvent('selection_toggle', {enabled: enabled});
             return this;
         },
 
