@@ -119,14 +119,14 @@
         this.borders[2].style.width = '100%';
         this.borders[3].style.left = 0;
         this.borders[3].style.height = '100%';
-        corners[0].style.top = '-4px';
-        corners[0].style.left = '-4px';
-        corners[1].style.top = '-4px';
-        corners[1].style.right = '-4px';
-        corners[2].style.bottom = '-4px';
-        corners[2].style.right = '-4px';
-        corners[3].style.bottom = '-4px';
-        corners[3].style.left = '-4px';
+        corners[0].style.top = '-3px';
+        corners[0].style.left = '-3px';
+        corners[1].style.top = '-3px';
+        corners[1].style.right = '-3px';
+        corners[2].style.bottom = '-3px';
+        corners[2].style.right = '-3px';
+        corners[3].style.bottom = '-3px';
+        corners[3].style.left = '-3px';
 
         if (!this.overlay) {
             this.overlay = new $.SelectionOverlay(this.element, this.rect || new $.SelectionRect());
