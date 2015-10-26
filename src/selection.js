@@ -122,7 +122,7 @@
         });
 
         this.outerTracker = new $.MouseTracker({
-            element:            this.viewer.canvas,
+            element:            this.viewer.drawer.canvas,
             clickTimeThreshold: this.viewer.clickTimeThreshold,
             clickDistThreshold: this.viewer.clickDistThreshold,
             dragHandler:        $.delegate( this, onOutsideDrag ),
@@ -226,7 +226,7 @@
 
         setState: function(enabled) {
             this.isSelecting = enabled;
-            this.viewer.innerTracker.setTracking(!enabled);
+            // this.viewer.innerTracker.setTracking(!enabled);
             this.outerTracker.setTracking(enabled);
             enabled ? this.draw() : this.undraw();
             this.viewer.raiseEvent('selection_toggle', {enabled: enabled});
