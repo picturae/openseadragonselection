@@ -65,6 +65,7 @@
         if (!this.element) {
             this.element = $.makeNeutralElement('div');
             this.element.style.background = 'rgba(0, 0, 0, 0.1)';
+            this.element.className        = 'selection-box';
         }
         this.borders = this.borders || [];
         var handle;
