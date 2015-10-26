@@ -68,6 +68,7 @@
         }
         this.borders = this.borders || [];
         var handle;
+        var corners = [];
         for (var i = 0; i < 4; i++) {
             if (!this.borders[i]) {
                 this.borders[i]                  = $.makeNeutralElement('div');
@@ -93,8 +94,22 @@
                 dragHandler: onBorderDrag.bind(this, i),
             });
 
+            corners[i]                  = $.makeNeutralElement('div');
+            corners[i].className        = 'corner-' + i + '-handle';
+            corners[i].style.position   = 'absolute';
+            corners[i].style.width      = '6px';
+            corners[i].style.height     = '6px';
+            corners[i].style.background = '#000';
+            corners[i].style.border     = '1px solid #ccc';
+            new $.MouseTracker({
+                element:     corners[i],
+                dragHandler: onBorderDrag.bind(this, i + 0.5),
+            });
+
             this.borders[i].appendChild(handle);
             this.element.appendChild(this.borders[i]);
+            // defer corners, so they are appended last
+            setTimeout(this.element.appendChild.bind(this.element, corners[i]), 0);
         }
         this.borders[0].style.top = 0;
         this.borders[0].style.width = '100%';
@@ -104,6 +119,14 @@
         this.borders[2].style.width = '100%';
         this.borders[3].style.left = 0;
         this.borders[3].style.height = '100%';
+        corners[0].style.top = '-4px';
+        corners[0].style.left = '-4px';
+        corners[1].style.top = '-4px';
+        corners[1].style.right = '-4px';
+        corners[2].style.bottom = '-4px';
+        corners[2].style.right = '-4px';
+        corners[3].style.bottom = '-4px';
+        corners[3].style.left = '-4px';
 
         if (!this.overlay) {
             this.overlay = new $.SelectionOverlay(this.element, this.rect || new $.SelectionRect());
@@ -334,6 +357,26 @@
                 this.rect.height += delta.y;
                 break;
             case 3:
+                this.rect.x += delta.x;
+                this.rect.width -= delta.x;
+                break;
+            case 0.5:
+                this.rect.y += delta.y;
+                this.rect.height -= delta.y;
+                this.rect.x += delta.x;
+                this.rect.width -= delta.x;
+                break;
+            case 1.5:
+                this.rect.y += delta.y;
+                this.rect.height -= delta.y;
+                this.rect.width += delta.x;
+                break;
+            case 2.5:
+                this.rect.width += delta.x;
+                this.rect.height += delta.y;
+                break;
+            case 3.5:
+                this.rect.height += delta.y;
                 this.rect.x += delta.x;
                 this.rect.width -= delta.x;
                 break;
