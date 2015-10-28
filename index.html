@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="OpenSeadragonSelection : An OpenSeadragon selection plugin for the tiled viewer.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>OpenSeadragonSelection</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/picturae/openseadragonselection">View on GitHub</a>
+
+          <h1 id="project_title">OpenSeadragonSelection</h1>
+          <h2 id="project_tagline">An OpenSeadragon selection plugin for the tiled viewer.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/picturae/openseadragonselection/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/picturae/openseadragonselection/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="openseadragonselection" class="anchor" href="#openseadragonselection" aria-hidden="true"><span class="octicon octicon-link"></span></a>OpenSeadragonSelection</h1>
+
+<p>An OpenSeadragon plugin that provides functionality for selecting a rectangular part of an image.</p>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Include <code>dist/openseadragonselection.js</code> after OpenSeadragon in your html. Then after you create a viewer:</p>
+
+<pre><code>viewer.selection(options);
+</code></pre>
+
+<h2>
+<a id="options" class="anchor" href="#options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Options</h2>
+
+<pre><code>viewer.selection({
+    element:              null, // html element to use for overlay
+    showSelectionControl: true, // @TODO show button to toggle selection mode
+    keyboardShortcut:     'c', // key to toggle selection mode
+    rect:                 null, // initial selection as an OpenSeadragon.SelectionRect object
+    onSelection:          function() {},
+});
+</code></pre>
+
+<h2>
+<a id="to-do" class="anchor" href="#to-do" aria-hidden="true"><span class="octicon octicon-link"></span></a>To do</h2>
+
+<pre><code>- fix behavior when the viewer itself is rotated
+- test/fix with multiple images at once
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">OpenSeadragonSelection maintained by <a href="https://github.com/picturae">picturae</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
