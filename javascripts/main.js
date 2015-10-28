@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     OpenSeadragon({
         id: 'contentDiv',
-        prefixUrl: '/images/buttons/',
+        prefixUrl: 'images/buttons/',
         tileSources: {
             Image: {
                 xmlns: 'http://schemas.microsoft.com/deepzoom/2008',
