@@ -2,6 +2,10 @@
 
 An OpenSeadragon plugin that provides functionality for selecting a rectangular part of an image.
 
+## Demo
+
+http://picturae.github.io/openseadragonselection/
+
 ## Usage
 
 Include `dist/openseadragonselection.js` after OpenSeadragon in your html. Then after you create a viewer:
