@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    OpenSeadragon({
+    var viewer = OpenSeadragon({
         id: 'contentDiv',
         prefixUrl: 'images/buttons/',
         tileSources: {
@@ -15,11 +15,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
-    }).selection({
+    });
+    viewer.selection({
         onSelection: function(rect) {
             alert(rect + ' Center point: ' + rect.getCenter() + ' Degree rotation: ' + rect.getDegreeRotation());
         }
-    }).rgb({
+    });
+    viewer.rgb({
         onMouseMove: function(color) {
             document.getElementById('r').value = color.r;
             document.getElementById('g').value = color.g;
