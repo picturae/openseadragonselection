@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     viewer = OpenSeadragon({
         id: 'contentDiv',
         prefixUrl: 'images/buttons/',
+        crossOriginPolicy: 'Anonymous',
         tileSources: {
             Image: {
                 xmlns: 'http://schemas.microsoft.com/deepzoom/2008',
@@ -24,9 +25,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     rgb = viewer.rgb({
         onCanvasHover: function(color) {
-            document.getElementById('r').value = color.r;
-            document.getElementById('g').value = color.g;
-            document.getElementById('b').value = color.b;
+            // document.getElementById('r').value = color.r;
+            // document.getElementById('g').value = color.g;
+            // document.getElementById('b').value = color.b;
         }
     });
 });
