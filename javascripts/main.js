@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 xmlns: 'http://schemas.microsoft.com/deepzoom/2008',
                 Url: 'http://openseadragon.github.io/example-images/duomo/duomo_files/',
                 Format: 'jpg',
-                Overlap: '2',
+                Overlap: '1',
                 TileSize: '256',
                 Size: {
                     Width:  '13920',
