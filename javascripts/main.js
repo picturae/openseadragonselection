@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     rgb = viewer.rgb({
-        onMouseMove: function(color) {
+        onCanvasHover: function(color) {
             document.getElementById('r').value = color.r;
             document.getElementById('g').value = color.g;
             document.getElementById('b').value = color.b;
