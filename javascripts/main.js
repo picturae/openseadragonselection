@@ -19,5 +19,11 @@ document.addEventListener('DOMContentLoaded', function() {
         onSelection: function(rect) {
             alert(rect + ' Center point: ' + rect.getCenter() + ' Degree rotation: ' + rect.getDegreeRotation());
         }
+    }).rgb({
+        onMouseMove: function(color) {
+            document.getElementById('r').value = color.r;
+            document.getElementById('g').value = color.g;
+            document.getElementById('b').value = color.b;
+        }
     });
 });

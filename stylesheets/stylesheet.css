@@ -437,3 +437,7 @@ Small Device Styles
   -o-box-shadow: none;
   -ms-box-shadow: none;
 }
+
+#rgba input {
+    width: 1em;
+}
