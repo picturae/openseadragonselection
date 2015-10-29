@@ -1,5 +1,6 @@
+var viewer, selection, rgb;
 document.addEventListener('DOMContentLoaded', function() {
-    var viewer = OpenSeadragon({
+    viewer = OpenSeadragon({
         id: 'contentDiv',
         prefixUrl: 'images/buttons/',
         tileSources: {
@@ -16,12 +17,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    viewer.selection({
+    selection =viewer.selection({
         onSelection: function(rect) {
             alert(rect + ' Center point: ' + rect.getCenter() + ' Degree rotation: ' + rect.getDegreeRotation());
         }
     });
-    viewer.rgb({
+    rgb = viewer.rgb({
         onMouseMove: function(color) {
             document.getElementById('r').value = color.r;
             document.getElementById('g').value = color.g;
