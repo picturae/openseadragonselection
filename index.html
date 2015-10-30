@@ -23,8 +23,8 @@
         <header class="inner">
             <a id="forkme_banner" href="https://github.com/picturae/openseadragonselection">View on GitHub</a>
 
-            <h1 id="project_title">OpenSeadragonSelection</h1>
-            <h2 id="project_tagline">An OpenSeadragon selection plugin for the tiled viewer.</h2>
+            <h1 id="project_title">OpenSeadragon Picturae plugins</h1>
+            <h2 id="project_tagline">Plugins for the OpenSeadragon tiled viewer.</h2>
 
         </header>
     </div>
@@ -38,17 +38,6 @@
                 </a>OpenSeadragonSelection</h1>
 
             <p>An OpenSeadragon plugin that provides functionality for selecting a rectangular part of an image.</p>
-
-            <h2>
-                <a id="usage" class="anchor" href="#usage" aria-hidden="true">
-                    <span class="octicon octicon-link"></span>
-                </a>Usage</h2>
-
-            <p>Include
-                <code>dist/openseadragonselection.js</code> after OpenSeadragon in your html. Then after you create a viewer:</p>
-
-            <pre><code>viewer.selection(options);</code></pre>
-
             <p>For more details see the <a href="https://github.com/picturae/openseadragonselection">README on the github page</a></p>
 
             <h2>
@@ -56,17 +45,37 @@
                     <span class="octicon octicon-link"></span>
                 </a>Example</h2>
 
-            <p>Example with default options:</p>
+            <p>
+                Example with default options:<br/>
+                Toggle selection mode with the last button or the 'c' key.
+            </p>
             <div id="contentDiv"></div>
 
-            <!-- <div id="rgba">
-                <label for="r">R</label>
-                <input type="number" name="r" id="r" />
-                <label for="g">G</label>
-                <input type="number" name="g" id="g" />
-                <label for="b">B</label>
-                <input type="number" name="b" id="b" />
-            </div> -->
+
+            <h1>
+                <a id="openseadragonrgb" class="anchor" href="#openseadragonrgb" aria-hidden="true">
+                    <span class="octicon octicon-link"></span>
+                </a>OpenSeadragonRGB</h1>
+
+            <p>An OpenSeadragon plugin to allow reading the rgb values of image pixels.</p>
+            <p>For more details see the <a href="https://github.com/picturae/openseadragonrgb">README on the github page</a></p>
+
+            <div id="rgba">
+                <p>Hover over the viewer to see RGB values</p>
+                <label for="r">R:</label>
+                <input type="number" name="r" id="r" disabled="disabled" />
+                <label for="g">G:</label>
+                <input type="number" name="g" id="g" disabled="disabled" />
+                <label for="b">B:</label>
+                <input type="number" name="b" id="b" disabled="disabled" />
+                <label for="a">a:</label>
+                <input type="number" name="a" id="a" disabled="disabled" />
+
+                <label for="img">
+                    Cursor is inside image:
+                    <input type="checkbox" name="img" id="img" disabled="disabled" />
+                </label>
+            </div>
 
         </section>
     </div>

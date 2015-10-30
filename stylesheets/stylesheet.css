@@ -438,6 +438,12 @@ Small Device Styles
   -ms-box-shadow: none;
 }
 
-#rgba input {
-    width: 3em;
+#rgba input[type=number] {
+    width: 45px;
+    padding: 0;
+    font: inherit;
+}
+
+label[for="img"] {
+    float: right;
 }

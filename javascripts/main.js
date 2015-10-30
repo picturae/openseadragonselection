@@ -4,19 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
         id: 'contentDiv',
         prefixUrl: 'images/buttons/',
         crossOriginPolicy: 'Anonymous',
-        tileSources: {
-            Image: {
-                xmlns: 'http://schemas.microsoft.com/deepzoom/2008',
-                Url: 'http://openseadragon.github.io/example-images/duomo/duomo_files/',
-                Format: 'jpg',
-                Overlap: '1',
-                TileSize: '256',
-                Size: {
-                    Width:  '13920',
-                    Height: '10200'
-                }
-            }
-        }
+        defaultZoomLevel: 0,
+        tileSources: 'http://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
     });
     selection =viewer.selection({
         onSelection: function(rect) {
@@ -25,9 +14,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     rgb = viewer.rgb({
         onCanvasHover: function(color) {
-            // document.getElementById('r').value = color.r;
-            // document.getElementById('g').value = color.g;
-            // document.getElementById('b').value = color.b;
+            document.getElementById('r').value = color.r;
+            document.getElementById('g').value = color.g;
+            document.getElementById('b').value = color.b;
+            document.getElementById('a').value = color.a;
+
+            document.getElementById('img').checked = !!color.image;
         }
     });
 });
