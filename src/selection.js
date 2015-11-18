@@ -38,7 +38,9 @@
             styleConfirmDenyButtons: true,
             keyboardShortcut:        'c',
             rect:                    null,
-            onSelection:             function() {},
+            startRotated:            false, // useful for rotated crops
+            startRotatedHeight:      0.1,
+            onSelection:             null,
             prefixUrl:               null,
             navImages:               {
                 selection: {
@@ -288,6 +290,7 @@
 
         confirm: function() {
             if (this.rect) {
+                console.log(this.rect);
                 var result = this.rect.normalize();
                 var real = this.viewer.viewport.viewportToImageRectangle(result);
                 real = $.SelectionRect.fromRect(real).round();
@@ -305,21 +308,29 @@
     });
 
     function onOutsideDrag(e) {
-        var start = new $.Point(e.position.x - e.delta.x, e.position.y - e.delta.y);
-        start = this.viewer.viewport.pointFromPixel(start, true);
-        var end = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
+        var delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
+        var end = this.viewer.viewport.pointFromPixel(e.position, true);
+        var start = new $.Point(end.x - delta.x, end.y - delta.y);
         if (!this.rect) {
-            this.rect = new $.SelectionRect(start.x, start.y, end.x, end.y);
+            if (this.startRotated) {
+                this.rotatedStartPoint = start;
+                this.rect = getPrerotatedRect(start, end, this.startRotatedHeight);
+            } else {
+                this.rect = new $.SelectionRect(start.x, start.y, delta.x, delta.y);
+            }
             this.rectDone = false;
         } else if (this.rectDone) {
             // rotate
             var angle1 = this.rect.getAngleFromCenter(start);
-            end = this.viewer.viewport.pointFromPixel(e.position, true);
             var angle2 = this.rect.getAngleFromCenter(end);
             this.rect.rotation = (this.rect.rotation + angle1 - angle2) % Math.PI;
         } else {
-            this.rect.width += end.x;
-            this.rect.height += end.y;
+            if (this.startRotated) {
+                this.rect = getPrerotatedRect(this.rotatedStartPoint, end, this.startRotatedHeight);
+            } else {
+                this.rect.width += delta.x;
+                this.rect.height += delta.y;
+            }
         }
         this.draw();
     }
@@ -347,12 +358,13 @@
     function onBorderDrag(border, e) {
         var delta = e.delta;
         var rotation = this.rect.getDegreeRotation();
+        var center;
         if (rotation !== 0) {
             // adjust vector
             delta = delta.rotate(-1 * rotation, new $.Point(0, 0));
+            center = this.rect.getCenter();
         }
         delta = this.viewer.viewport.deltaPointsFromPixels(delta, true);
-        var center = this.rect.getCenter();
         switch (border) {
             case 0:
                 this.rect.y += delta.y;
@@ -409,6 +421,34 @@
         } else if (String.fromCharCode(key) === this.keyboardShortcut) {
             this.toggleState();
         }
+    }
+
+    function getPrerotatedRect(start, end, height) {
+        if (start.x > end.x) {
+            // always draw left to right
+            var x = start;
+            start = end;
+            end = x;
+        }
+        var delta = end.minus(start);
+        var dist = start.distanceTo(end);
+        var angle = -1 * Math.atan2(delta.x, delta.y) + (Math.PI / 2);
+        var center = new $.Point(
+            delta.x / 2 + start.x,
+            delta.y / 2 + start.y
+        );
+        var rect = new $.SelectionRect(
+            center.x - (dist / 2),
+            center.y - (height / 2),
+            dist,
+            height,
+            angle
+        );
+        var heightModDelta = new $.Point(0, height);
+        heightModDelta = heightModDelta.rotate(rect.getDegreeRotation(), new $.Point(0, 0));
+        rect.x += heightModDelta.x / 2;
+        rect.y += heightModDelta.y / 2;
+        return rect;
     }
 
 })(OpenSeadragon);

@@ -24,7 +24,7 @@ gulp.task('watch', ['uglify'], function () {
 });
 
 gulp.task('serve', plugins.serve({
-    root: ['dist'],
+    root: ['dist', 'images'],
     port: 4040,
 }));
 
