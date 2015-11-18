@@ -27,6 +27,7 @@
             // internal state properties
             viewer:                  null,
             isSelecting:             false,
+            buttonActiveImg:         false,
             rectDone:                !!options.rect,
 
             // options
@@ -38,28 +39,29 @@
             keyboardShortcut:        'c',
             rect:                    null,
             onSelection:             function() {},
+            prefixUrl:               null,
+            navImages:               {
+                selection: {
+                    REST:   'selection_rest.png',
+                    GROUP:  'selection_grouphover.png',
+                    HOVER:  'selection_hover.png',
+                    DOWN:   'selection_pressed.png'
+                },
+                selectionConfirm: {
+                    REST:   'selection_confirm_rest.png',
+                    GROUP:  'selection_confirm_grouphover.png',
+                    HOVER:  'selection_confirm_hover.png',
+                    DOWN:   'selection_confirm_pressed.png'
+                },
+                selectionCancel: {
+                    REST:   'selection_cancel_rest.png',
+                    GROUP:  'selection_cancel_grouphover.png',
+                    HOVER:  'selection_cancel_hover.png',
+                    DOWN:   'selection_cancel_pressed.png'
+                },
+            }
         }, options );
 
-        this.navImages = this.navImages || {
-            selection: {
-                REST:   'selection_rest.png',
-                GROUP:  'selection_grouphover.png',
-                HOVER:  'selection_hover.png',
-                DOWN:   'selection_pressed.png'
-            },
-            selectionConfirm: {
-                REST:   'selection_confirm_rest.png',
-                GROUP:  'selection_confirm_grouphover.png',
-                HOVER:  'selection_confirm_hover.png',
-                DOWN:   'selection_confirm_pressed.png'
-            },
-            selectionCancel: {
-                REST:   'selection_cancel_rest.png',
-                GROUP:  'selection_cancel_grouphover.png',
-                HOVER:  'selection_cancel_hover.png',
-                DOWN:   'selection_cancel_pressed.png'
-            },
-        };
         $.extend( true, this.navImages, this.viewer.navImages );
 
         if (!this.element) {
@@ -164,7 +166,7 @@
             );
         }
 
-        var prefix = this.viewer.prefixUrl || '';
+        var prefix = this.prefixUrl || this.viewer.prefixUrl || '';
         var useGroup = this.viewer.buttons && this.viewer.buttons.buttons;
         var anyButton = useGroup ? this.viewer.buttons.buttons[0] : null;
         var onFocusHandler = anyButton ? anyButton.onFocus : null;
@@ -187,6 +189,8 @@
                 this.viewer.buttons.buttons.push(this.toggleButton);
                 this.viewer.buttons.element.appendChild(this.toggleButton.element);
             }
+            this.buttonActiveImg = this.toggleButton.imgDown.cloneNode(true);
+            this.toggleButton.element.appendChild(this.buttonActiveImg);
         }
         if (this.showConfirmDenyButtons) {
             this.confirmButton = new $.Button({
@@ -253,6 +257,9 @@
             // this.viewer.innerTracker.setTracking(!enabled);
             this.outerTracker.setTracking(enabled);
             enabled ? this.draw() : this.undraw();
+            if (this.buttonActiveImg) {
+                this.buttonActiveImg.style.visibility = enabled ? 'visible' : 'hidden';
+            }
             this.viewer.raiseEvent('selection_toggle', {enabled: enabled});
             return this;
         },
