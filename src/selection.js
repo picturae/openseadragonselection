@@ -191,8 +191,10 @@
                 this.viewer.buttons.buttons.push(this.toggleButton);
                 this.viewer.buttons.element.appendChild(this.toggleButton.element);
             }
-            this.buttonActiveImg = this.toggleButton.imgDown.cloneNode(true);
-            this.toggleButton.element.appendChild(this.buttonActiveImg);
+            if (this.toggleButton.imgDown) {
+                this.buttonActiveImg = this.toggleButton.imgDown.cloneNode(true);
+                this.toggleButton.element.appendChild(this.buttonActiveImg);
+            }
         }
         if (this.showConfirmDenyButtons) {
             this.confirmButton = new $.Button({
