@@ -292,7 +292,6 @@
 
         confirm: function() {
             if (this.rect) {
-                console.log(this.rect);
                 var result = this.rect.normalize();
                 var real = this.viewer.viewport.viewportToImageRectangle(result);
                 real = $.SelectionRect.fromRect(real).round();
