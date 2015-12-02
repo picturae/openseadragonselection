@@ -20,6 +20,7 @@ Include `dist/openseadragonselection.js` after OpenSeadragon in your html. Then 
         toggleButton:            null, // dom element to use as toggle button
         showConfirmDenyButtons:  true,
         styleConfirmDenyButtons: true,
+        returnPixelCoordinates:  true,
         keyboardShortcut:        'c', // key to toggle selection mode
         rect:                    null, // initial selection as an OpenSeadragon.SelectionRect object
         startRotated:            false, // alternative method for drawing the selection; useful for rotated crops

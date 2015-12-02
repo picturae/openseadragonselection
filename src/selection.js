@@ -36,6 +36,7 @@
             showSelectionControl:    true,
             showConfirmDenyButtons:  true,
             styleConfirmDenyButtons: true,
+            returnPixelCoordinates:  true,
             keyboardShortcut:        'c',
             rect:                    null,
             startRotated:            false, // useful for rotated crops
@@ -293,10 +294,13 @@
         confirm: function() {
             if (this.rect) {
                 var result = this.rect.normalize();
-                var real = this.viewer.viewport.viewportToImageRectangle(result);
-                real = $.SelectionRect.fromRect(real).round();
-                real.rotation = result.rotation;
-                this.viewer.raiseEvent('selection', real);
+                if (this.returnPixelCoordinates) {
+                    var real = this.viewer.viewport.viewportToImageRectangle(result);
+                    real = $.SelectionRect.fromRect(real).round();
+                    real.rotation = result.rotation;
+                    result = real;
+                }
+                this.viewer.raiseEvent('selection', result);
                 this.undraw();
             }
             return this;
