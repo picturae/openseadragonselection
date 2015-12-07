@@ -61,7 +61,6 @@ body {
 h1, h2, h3, h4, h5, h6 {
   margin: 10px 0;
   font-weight: 700;
-  color:#222222;
   font-family: 'Lucida Grande', 'Calibri', Helvetica, Arial, sans-serif;
   letter-spacing: -1px;
 }
@@ -438,12 +437,20 @@ Small Device Styles
   -ms-box-shadow: none;
 }
 
-#rgba input[type=number] {
-    width: 45px;
+input[type=number] {
+    width: 50px;
     padding: 0;
     font: inherit;
 }
 
+#tabs-zoom-levels input[type=number] {
+    width: 60px;
+}
+
 label[for="img"] {
     float: right;
+}
+
+.ui-widget-content a {
+     color: #007edf;
 }
