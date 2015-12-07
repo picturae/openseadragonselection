@@ -3,18 +3,17 @@
   "version": "1.0.0",
   "description": "An OpenSeadragon plugin to allow selecting part of the zoomable image and getting the corresponding coordinates.",
   "main": "selection.js",
-  "scripts": {
-    "test": "test"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/picturae/openseadragonselection.git"
   },
   "keywords": [
     "openseadragon",
-    "selection"
+    "selection",
+    "crop"
   ],
-  "author": "Petar Petrov <freonblood@gmail.com>",
+  "author": "Petar Petrov ",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/picturae/openseadragonselection/issues"

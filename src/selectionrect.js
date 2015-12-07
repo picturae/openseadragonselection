@@ -90,6 +90,7 @@
 
         /**
          * @function
+         * @param {OpenSeadragon.Point} point
          * @returns {Number} The angle in radians
          */
         getAngleFromCenter: function(point) {
@@ -129,6 +130,32 @@
             }
             fixed.rotation %= Math.PI;
             return fixed;
+        },
+
+        /**
+         * @function
+         * @param {OpenSeadragon.Rect} area
+         * @returns {Boolean} Does this rect fit in a specified area
+         */
+        fitsIn: function(area) {
+            var rect = this.normalize();
+            var corners = [
+                rect.getTopLeft(),
+                rect.getTopRight(),
+                rect.getBottomRight(),
+                rect.getBottomLeft(),
+            ];
+            var center = rect.getCenter();
+            var rotation = rect.getDegreeRotation();
+            var areaEnd = area.getBottomRight();
+            for (var i = 0; i < 4; i++) {
+                corners[i] = corners[i].rotate(rotation, center);
+                if (corners[i].x < area.x || corners[i].x > areaEnd.x ||
+                    corners[i].y < area.y || corners[i].y > areaEnd.y) {
+                    return false;
+                }
+            }
+            return true;
         },
 
         /**

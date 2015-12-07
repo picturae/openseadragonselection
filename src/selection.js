@@ -40,6 +40,7 @@
             rect:                    null,
             startRotated:            false, // useful for rotated crops
             startRotatedHeight:      0.1,
+            restrictToImage:         false,
             onSelection:             null,
             prefixUrl:               null,
             navImages:               {
@@ -313,6 +314,12 @@
         var end = this.viewer.viewport.pointFromPixel(e.position, true);
         var start = new $.Point(end.x - delta.x, end.y - delta.y);
         if (!this.rect) {
+            if (this.restrictToImage) {
+                if (!pointIsInImage(start)) {
+                    return;
+                }
+                restrictVector(delta, end);
+            }
             if (this.startRotated) {
                 this.rotatedStartPoint = start;
                 this.rect = getPrerotatedRect(start, end, this.startRotatedHeight);
@@ -320,17 +327,26 @@
                 this.rect = new $.SelectionRect(start.x, start.y, delta.x, delta.y);
             }
             this.rectDone = false;
-        } else if (this.rectDone) {
-            // rotate
-            var angle1 = this.rect.getAngleFromCenter(start);
-            var angle2 = this.rect.getAngleFromCenter(end);
-            this.rect.rotation = (this.rect.rotation + angle1 - angle2) % Math.PI;
         } else {
-            if (this.startRotated) {
-                this.rect = getPrerotatedRect(this.rotatedStartPoint, end, this.startRotatedHeight);
+            var oldRect;
+            if (this.restrictToImage) {
+                oldRect = this.rect.clone();
+            }
+            if (this.rectDone) {
+                // rotate
+                var angle1 = this.rect.getAngleFromCenter(start);
+                var angle2 = this.rect.getAngleFromCenter(end);
+                this.rect.rotation = (this.rect.rotation + angle1 - angle2) % Math.PI;
             } else {
-                this.rect.width += delta.x;
-                this.rect.height += delta.y;
+                if (this.startRotated) {
+                    this.rect = getPrerotatedRect(this.rotatedStartPoint, end, this.startRotatedHeight);
+                } else {
+                    this.rect.width += delta.x;
+                    this.rect.height += delta.y;
+                }
+            }
+            if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, 1, 1))) {
+                this.rect = oldRect;
             }
         }
         this.draw();
@@ -349,6 +365,10 @@
         var delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
         this.rect.x += delta.x;
         this.rect.y += delta.y;
+        if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, 1, 1))) {
+            this.rect.x -= delta.x;
+            this.rect.y -= delta.y;
+        }
         this.draw();
     }
 
@@ -360,6 +380,7 @@
         var delta = e.delta;
         var rotation = this.rect.getDegreeRotation();
         var center;
+        var oldRect = this.restrictToImage ? this.rect.clone() : null;
         if (rotation !== 0) {
             // adjust vector
             delta = delta.rotate(-1 * rotation, new $.Point(0, 0));
@@ -412,6 +433,9 @@
             this.rect.x += delta.x;
             this.rect.y += delta.y;
         }
+        if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, 1, 1))) {
+            this.rect = oldRect;
+        }
         this.draw();
     }
 
@@ -450,6 +474,26 @@
         rect.x += heightModDelta.x / 2;
         rect.y += heightModDelta.y / 2;
         return rect;
+    }
+
+    function pointIsInImage(point) {
+        return point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1;
+    }
+
+    function restrictVector(delta, end) {
+        var start;
+        for (var prop in {x: 0, y: 0}) {
+            start = end[prop] - delta[prop];
+            if (start < 1 && start > 0) {
+                if (end[prop] > 1) {
+                    delta[prop] -= end[prop] - 1;
+                    end[prop] = 1;
+                } else if (end[prop] < 0) {
+                    delta[prop] -= end[prop];
+                    end[prop] = 0;
+                }
+            }
+        }
     }
 
 })(OpenSeadragon);
