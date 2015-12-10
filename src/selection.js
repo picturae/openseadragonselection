@@ -28,7 +28,7 @@
             viewer:                  null,
             isSelecting:             false,
             buttonActiveImg:         false,
-            rectDone:                !!options.rect,
+            rectDone:                true,
 
             // options
             element:                 null,
