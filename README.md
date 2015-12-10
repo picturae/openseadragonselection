@@ -10,7 +10,13 @@ http://picturae.github.io/openseadragonselection/
 
 Include `dist/openseadragonselection.js` after OpenSeadragon in your html. Then after you create a viewer:
 
-    viewer.selection(options);
+    var selection = viewer.selection(options);
+
+Then you can alter the selection state with any of these:
+
+    selection.enable();
+    selection.disable();
+    selection.toggleState();
 
 ## Options
 
