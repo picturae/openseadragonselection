@@ -147,8 +147,8 @@
             dragEndHandler:     $.delegate( this, onInsideDragEnd ),
             // keyHandler:         $.delegate( this, onKeyPress ),
             clickHandler:       $.delegate( this, onClick ),
-            scrollHandler:      $.delegate( this.viewer, this.viewer.innerTracker.scrollHandler ),
-            pinchHandler:       $.delegate( this.viewer, this.viewer.innerTracker.pinchHandler ),
+            // scrollHandler:      $.delegate( this.viewer, this.viewer.innerTracker.scrollHandler ),
+            // pinchHandler:       $.delegate( this.viewer, this.viewer.innerTracker.pinchHandler ),
         });
 
         this.outerTracker = new $.MouseTracker({
