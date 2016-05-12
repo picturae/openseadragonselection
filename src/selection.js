@@ -213,6 +213,7 @@
                 onBlur:     onBlurHandler
             });
             var confirm = this.confirmButton.element;
+            confirm.classList.add('confirm-button');
             this.element.appendChild(confirm);
 
             this.cancelButton = new $.Button({
@@ -229,6 +230,7 @@
                 onBlur:     onBlurHandler
             });
             var cancel = this.cancelButton.element;
+            cancel.classList.add('cancel-button');
             this.element.appendChild(cancel);
 
             if (this.styleConfirmDenyButtons) {
