@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     filters = viewer.imagefilters();
 
-    magnifier = viewer.magnifier();
+    magnifier = viewer.magnifier().toggleVisibility();
 
     var active = $('#tabs > div').index($(location.hash));
     $('#tabs').tabs({active: active === -1 ? null : active});
