@@ -1,4 +1,4 @@
-var viewer, selection, rgb, levels, filters;
+var viewer, selection, rgb, levels, filters, magnifier;
 document.addEventListener('DOMContentLoaded', function() {
     viewer = OpenSeadragon({
         id: 'contentDiv',
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('img').checked = !!color.image;
         }
     });
-    
+
     levels = viewer.zoomLevels({
         levels: [0.04, 0.05, 0.07, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.65, 0.8, 1]
         // levels: [0.1, 1]
@@ -38,7 +38,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     filters = viewer.imagefilters();
-    
+
+    magnifier = viewer.magnifier();
+
     var active = $('#tabs > div').index($(location.hash));
     $('#tabs').tabs({active: active === -1 ? null : active});
 });
