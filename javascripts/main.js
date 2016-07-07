@@ -41,6 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     magnifier = viewer.magnifier().toggleVisibility();
 
-    var active = $('#tabs > div').index($(location.hash));
+    var active = $('#tabs > div').index($('#tabs-' + location.hash.substring(1)));
     $('#tabs').tabs({active: active === -1 ? null : active});
 });
