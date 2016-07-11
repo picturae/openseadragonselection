@@ -11,11 +11,15 @@ document.addEventListener('DOMContentLoaded', function() {
         //navigationControlAnchor: OpenSeadragon.ControlAnchor.BOTTOM_LEFT,
         immediateRender: true
     });
-    selection =viewer.selection({
+
+    //selection plugin
+    selection = viewer.selection({
         onSelection: function(rect) {
             alert(rect + ' Center point: ' + rect.getCenter() + ' Degree rotation: ' + rect.getDegreeRotation());
         }
     });
+
+    //regb plugin
     rgb = viewer.rgb({ //does not work in fullscreen since elements do not exist in fullscreen
         onCanvasHover: function(color) {
             document.getElementById('r').value = color.r;
@@ -27,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    //zoomlevels plugin
     levels = viewer.zoomLevels({
         levels: [0.04, 0.05, 0.07, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.65, 0.8, 1]
         // levels: [0.1, 1]
@@ -37,10 +42,17 @@ document.addEventListener('DOMContentLoaded', function() {
         zoomView.val(percentage.toFixed(2));
     });
 
+    //filters plugin
     filters = viewer.imagefilters();
 
+    //magnifier plugin
     magnifier = viewer.magnifier().toggleVisibility();
 
-    var active = $('#tabs > div').index($(location.hash + ',#tabs-' + location.hash.substring(1)));
-    $('#tabs').tabs({active: active === -1 ? null : active});
+    //tabs of demo pages
+    if(typeof location.hash === 'undefined') {
+        var active = $('#tabs > div').index($(location.hash + ',#tabs-' + location.hash.substring(1)));
+        $('#tabs').tabs({active: active === -1 ? null : active});
+    } else {
+        $('#tabs').tabs({active: active === -1 ? null : active});
+    }
 });
