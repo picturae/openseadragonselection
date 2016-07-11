@@ -1,6 +1,6 @@
-//! openseadragon 2.2.0
-//! Built on 2016-05-26
-//! Git commit: v2.2.0-0-373e61e
+//! openseadragon 2.2.1
+//! Built on 2016-06-21
+//! Git commit: v2.2.1-0-babdefd
 //! http://openseadragon.github.io
 //! License: http://openseadragon.github.io/license/
 
@@ -90,7 +90,7 @@
 
 /**
  * @namespace OpenSeadragon
- * @version openseadragon 2.2.0
+ * @version openseadragon 2.2.1
  * @classdesc The root namespace for OpenSeadragon.  All utility methods
  * and classes are defined on or below this namespace.
  *
@@ -245,6 +245,12 @@
   *     A zoom percentage ( where 1 is 100% ) of the highest resolution level.
   *     When zoomed in beyond this value alternative compositing will be used to
   *     smooth out the edges between tiles. This will have a performance impact.
+  *     Can be set to Infinity to turn it off.
+  *     Note: This setting is ignored on iOS devices due to a known bug (See {@link https://github.com/openseadragon/openseadragon/issues/952})
+  *
+  * @property {Boolean} [iOSDevice=?]
+  *     True if running on an iOS device, false otherwise.
+  *     Used to disable certain features that behave differently on iOS devices.
   *
   * @property {Boolean} [autoResize=true]
   *     Set to false to prevent polling for viewer size changes. Useful for providing custom resize behavior.
@@ -712,10 +718,10 @@ if (typeof define === 'function' && define.amd) {
      * @since 1.0.0
      */
     $.version = {
-        versionStr: '2.2.0',
+        versionStr: '2.2.1',
         major: parseInt('2', 10),
         minor: parseInt('2', 10),
-        revision: parseInt('0', 10)
+        revision: parseInt('1', 10)
     };
 
 
@@ -987,6 +993,18 @@ if (typeof define === 'function' && define.amd) {
         return target;
     };
 
+    var isIOSDevice = function () {
+        if (typeof navigator !== 'object') {
+            return false;
+        }
+        var userAgent = navigator.userAgent;
+        if (typeof userAgent !== 'string') {
+            return false;
+        }
+        return userAgent.indexOf('iPhone') !== -1 ||
+               userAgent.indexOf('iPad') !== -1 ||
+               userAgent.indexOf('iPod') !== -1;
+    };
 
     $.extend( $, /** @lends OpenSeadragon */{
         /**
@@ -1037,6 +1055,7 @@ if (typeof define === 'function' && define.amd) {
             minZoomImageRatio:      0.9, //-> closer to 0 allows zoom out to infinity
             maxZoomPixelRatio:      1.1, //-> higher allows 'over zoom' into pixels
             smoothTileEdgesMinZoom: 1.1, //-> higher than maxZoomPixelRatio disables it
+            iOSDevice:              isIOSDevice(),
             pixelsPerWheelLine:     40,
             autoResize:             true,
             preserveImageSizeOnResize: false, // requires autoResize=true
@@ -8163,6 +8182,7 @@ $.extend( $.Viewer.prototype, $.EventSource.prototype, $.ControlDock.prototype, 
                     alwaysBlend: _this.alwaysBlend,
                     minPixelRatio: _this.minPixelRatio,
                     smoothTileEdgesMinZoom: _this.smoothTileEdgesMinZoom,
+                    iOSDevice: _this.iOSDevice,
                     crossOriginPolicy: _this.crossOriginPolicy,
                     debugMode: _this.debugMode
                 });
@@ -17576,51 +17596,40 @@ $.Viewport.prototype = {
                 bounds.width,
                 bounds.height);
 
-        var horizontalThreshold = this.visibilityRatio * newBounds.width;
-        var verticalThreshold   = this.visibilityRatio * newBounds.height;
-
         if (this.wrapHorizontal) {
             //do nothing
         } else {
-            var dx = 0;
-            var thresholdLeft = newBounds.x + (newBounds.width - horizontalThreshold);
-            if (this._contentBoundsNoRotate.x > thresholdLeft) {
-                dx = this._contentBoundsNoRotate.x - thresholdLeft;
-            }
-
+            var horizontalThreshold = this.visibilityRatio * newBounds.width;
+            var boundsRight = newBounds.x + newBounds.width;
             var contentRight = this._contentBoundsNoRotate.x + this._contentBoundsNoRotate.width;
-            var thresholdRight = newBounds.x + horizontalThreshold;
-            if (contentRight < thresholdRight) {
-                var newDx = contentRight - thresholdRight;
-                if (dx) {
-                    dx = (dx + newDx) / 2;
-                } else {
-                    dx = newDx;
-                }
+            var leftDx = this._contentBoundsNoRotate.x - boundsRight + horizontalThreshold;
+            var rightDx = contentRight - newBounds.x - horizontalThreshold;
+
+            if (horizontalThreshold > this._contentBoundsNoRotate.width) {
+                newBounds.x += (leftDx + rightDx) / 2;
+            } else if (rightDx < 0) {
+                newBounds.x += rightDx;
+            } else if (leftDx > 0) {
+                newBounds.x += leftDx;
             }
-            newBounds.x += dx;
         }
 
         if (this.wrapVertical) {
             //do nothing
         } else {
-            var dy = 0;
-            var thresholdTop = newBounds.y + (newBounds.height - verticalThreshold);
-            if (this._contentBoundsNoRotate.y > thresholdTop) {
-                dy = this._contentBoundsNoRotate.y - thresholdTop;
-            }
-
+            var verticalThreshold   = this.visibilityRatio * newBounds.height;
+            var boundsBottom = newBounds.y + newBounds.height;
             var contentBottom = this._contentBoundsNoRotate.y + this._contentBoundsNoRotate.height;
-            var thresholdBottom = newBounds.y + verticalThreshold;
-            if (contentBottom < thresholdBottom) {
-                var newDy = contentBottom - thresholdBottom;
-                if (dy) {
-                    dy = (dy + newDy) / 2;
-                } else {
-                    dy = newDy;
-                }
+            var topDy = this._contentBoundsNoRotate.y - boundsBottom + verticalThreshold;
+            var bottomDy = contentBottom - newBounds.y - verticalThreshold;
+
+            if (verticalThreshold > this._contentBoundsNoRotate.height) {
+                newBounds.y += (topDy + bottomDy) / 2;
+            } else if (bottomDy < 0) {
+                newBounds.y += bottomDy;
+            } else if (topDy > 0) {
+                newBounds.y += topDy;
             }
-            newBounds.y += dy;
         }
 
         if (this.viewer) {
@@ -18654,6 +18663,7 @@ $.Viewport.prototype = {
  * @param {Boolean} [options.alwaysBlend] - See {@link OpenSeadragon.Options}.
  * @param {Number} [options.minPixelRatio] - See {@link OpenSeadragon.Options}.
  * @param {Number} [options.smoothTileEdgesMinZoom] - See {@link OpenSeadragon.Options}.
+ * @param {Boolean} [options.iOSDevice] - See {@link OpenSeadragon.Options}.
  * @param {Number} [options.opacity=1] - Opacity the tiled image should be drawn at.
  * @param {String} [options.compositeOperation] - How the image is composited onto other images; see compositeOperation in {@link OpenSeadragon.Options} for possible values.
  * @param {Boolean} [options.debugMode] - See {@link OpenSeadragon.Options}.
@@ -18738,6 +18748,7 @@ $.TiledImage = function( options ) {
         alwaysBlend:            $.DEFAULT_SETTINGS.alwaysBlend,
         minPixelRatio:          $.DEFAULT_SETTINGS.minPixelRatio,
         smoothTileEdgesMinZoom: $.DEFAULT_SETTINGS.smoothTileEdgesMinZoom,
+        iOSDevice:              $.DEFAULT_SETTINGS.iOSDevice,
         debugMode:              $.DEFAULT_SETTINGS.debugMode,
         crossOriginPolicy:      $.DEFAULT_SETTINGS.crossOriginPolicy,
         placeholderFillStyle:   $.DEFAULT_SETTINGS.placeholderFillStyle,
@@ -20019,9 +20030,10 @@ function drawTiles( tiledImage, lastDrawn ) {
 
     var zoom = tiledImage.viewport.getZoom(true);
     var imageZoom = tiledImage.viewportToImageZoom(zoom);
-    if (imageZoom > tiledImage.smoothTileEdgesMinZoom) {
+    if (imageZoom > tiledImage.smoothTileEdgesMinZoom && !tiledImage.iOSDevice) {
         // When zoomed in a lot (>100%) the tile edges are visible.
         // So we have to composite them at ~100% and scale them up together.
+        // Note: Disabled on iOS devices per default as it causes a native crash
         useSketch = true;
         sketchScale = tile.getScaleForEdgeSmoothing();
         sketchTranslate = tile.getTranslationForEdgeSmoothing(sketchScale,
