@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
         crossOriginPolicy: 'Anonymous',
         defaultZoomLevel: 1.1,
         //zoomLevels: [0.04, 0.05, 0.07, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.65, 0.8, 1], //only for Picturae fork of openseadragon
-        tileSources: 'http://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
+        tileSources: window.location.protocol + '://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
         minZoomImageRatio: 0.1, // of viewer size
         //navigationControlAnchor: OpenSeadragon.ControlAnchor.BOTTOM_LEFT,
         immediateRender: true
