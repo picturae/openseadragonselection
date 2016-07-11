@@ -4,7 +4,7 @@ An OpenSeadragon plugin that provides functionality for selecting a rectangular 
 
 ## Demo
 
-http://picturae.github.io/openseadragonselection/
+https://picturae.github.io/openseadragonselection/
 
 ## Usage
 
