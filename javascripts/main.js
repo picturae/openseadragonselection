@@ -1,5 +1,14 @@
 var viewer, selection, rgb, levels, filters, magnifier;
 document.addEventListener('DOMContentLoaded', function() {
+
+    OpenSeadragon.setString('Tooltips.SelectionToggle','Selection Demo');
+    OpenSeadragon.setString('Tooltips.SelectionConfirm','Ok');
+    OpenSeadragon.setString('Tooltips.ImageTools','Image tools');
+    OpenSeadragon.setString('Tool.brightness','Brightness');
+    OpenSeadragon.setString('Tool.contrast','Contrast');
+    OpenSeadragon.setString('Tool.reset','Reset');
+
+
     viewer = OpenSeadragon({
         id: 'contentDiv',
         prefixUrl: 'images/buttons/',
@@ -12,6 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
         //navigationControlAnchor: OpenSeadragon.ControlAnchor.BOTTOM_LEFT,
         immediateRender: true
     });
+
+
 
     //selection plugin
     selection = viewer.selection({
