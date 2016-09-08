@@ -62,4 +62,5 @@ Then you can alter the selection state with any of these:
     - test/fix with multiple images at once
 
 ## Fixes
-    - Now selection can be draw over existing selections, make selection in selection. To achieve that before you were forced to make a selection outside any other selection and move it over.
+    - Now selection can be draw over existing selections, make selection in selection. 
+    To achieve that before you were forced to make a selection outside any other selection and move it over.
