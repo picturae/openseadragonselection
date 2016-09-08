@@ -60,3 +60,6 @@ Then you can alter the selection state with any of these:
 
     - fix behavior when the viewer itself is rotated
     - test/fix with multiple images at once
+
+## Fixes
+    - Now selection can be draw over existing selections, make selection in selection. To achieve that before you were forced to make a selection outside any other selection and move it over.

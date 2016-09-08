@@ -152,7 +152,7 @@
         });
 
         this.outerTracker = new $.MouseTracker({
-            element:            this.viewer.drawer.canvas,
+            element:            this.viewer.canvas,
             clickTimeThreshold: this.viewer.clickTimeThreshold,
             clickDistThreshold: this.viewer.clickDistThreshold,
             dragHandler:        $.delegate( this, onOutsideDrag ),
@@ -316,6 +316,8 @@
     });
 
     function onOutsideDrag(e) {
+        // Disable move when makeing new selection
+        this.viewer.setMouseNavEnabled(false);
         var delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
         var end = this.viewer.viewport.pointFromPixel(e.position, true);
         var start = new $.Point(end.x - delta.x, end.y - delta.y);
@@ -359,6 +361,8 @@
     }
 
     function onOutsideDragEnd() {
+        // Eable move after new selection is done
+        this.viewer.setMouseNavEnabled(true);
         this.rectDone = true;
     }
 
