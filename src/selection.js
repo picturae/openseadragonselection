@@ -323,7 +323,7 @@
         var start = new $.Point(end.x - delta.x, end.y - delta.y);
         if (!this.rect) {
             if (this.restrictToImage) {
-                if (!pointIsInImage(start)) {
+                if (!pointIsInImage(this, start)) {
                     return;
                 }
                 restrictVector(delta, end);
@@ -353,7 +353,8 @@
                     this.rect.height += delta.y;
                 }
             }
-            if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, 1, 1))) {
+            var bounds = this.viewer.world.getHomeBounds();
+            if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, bounds.width, bounds.height))) {
                 this.rect = oldRect;
             }
         }
@@ -375,7 +376,8 @@
         var delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
         this.rect.x += delta.x;
         this.rect.y += delta.y;
-        if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, 1, 1))) {
+        var bounds = this.viewer.world.getHomeBounds();
+        if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, bounds.width, bounds.height))) {
             this.rect.x -= delta.x;
             this.rect.y -= delta.y;
         }
@@ -443,7 +445,8 @@
             this.rect.x += delta.x;
             this.rect.y += delta.y;
         }
-        if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, 1, 1))) {
+        var bounds = this.viewer.world.getHomeBounds();
+        if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, bounds.width, bounds.height))) {
             this.rect = oldRect;
         }
         this.draw();
@@ -486,8 +489,9 @@
         return rect;
     }
 
-    function pointIsInImage(point) {
-        return point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1;
+    function pointIsInImage(self, point) {
+        var bounds = self.viewer.world.getHomeBounds();
+        return point.x >= 0 && point.x <= bounds.width && point.y >= 0 && point.y <= bounds.height;
     }
 
     function restrictVector(delta, end) {
