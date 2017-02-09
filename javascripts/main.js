@@ -7,7 +7,10 @@ document.addEventListener('DOMContentLoaded', function() {
     OpenSeadragon.setString('Tool.brightness','Brightness');
     OpenSeadragon.setString('Tool.contrast','Contrast');
     OpenSeadragon.setString('Tool.reset','Reset');
-
+    OpenSeadragon.setString('Tooltips.HorizontalGuide', 'Add Horizontal Guide');
+    OpenSeadragon.setString('Tooltips.VerticalGuide', 'Add Vertical Guide');
+    OpenSeadragon.setString('Tool.rotate', 'Rotate');
+    OpenSeadragon.setString('Tool.close', 'Close');
 
     viewer = OpenSeadragon({
         id: 'contentDiv',
