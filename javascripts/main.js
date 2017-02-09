@@ -60,6 +60,11 @@ document.addEventListener('DOMContentLoaded', function() {
     //magnifier plugin
     magnifier = viewer.magnifier().toggleVisibility();
 
+    // Guides plugin
+    viewer.guides({
+      prefixUrl: '/images/'
+    });
+
     //tabs of demo pages
     if(typeof location.hash === 'undefined') {
         var active = $('#tabs > div').index($(location.hash + ',#tabs-' + location.hash.substring(1)));
