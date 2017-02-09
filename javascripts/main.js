@@ -64,9 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
     magnifier = viewer.magnifier().toggleVisibility();
 
     // Guides plugin
-    viewer.guides({
-      prefixUrl: '/images/'
-    });
+    viewer.guides();
 
     //tabs of demo pages
     if(typeof location.hash === 'undefined') {
