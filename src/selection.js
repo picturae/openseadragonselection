@@ -41,6 +41,7 @@
             rect:                    null,
             startRotated:            false, // useful for rotated crops
             startRotatedHeight:      0.1,
+            allowRotation:           true,
             restrictToImage:         false,
             onSelection:             null,
             prefixUrl:               null,
@@ -282,6 +283,9 @@
 
         draw: function() {
             if (this.rect) {
+                var deg = viewer.viewport.getRotation();
+                var rad = Math.PI * deg / 180;
+                this.rect.rotation = -rad;
                 this.overlay.update(this.rect.normalize());
                 this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
             }
@@ -319,6 +323,10 @@
         // Disable move when makeing new selection
         this.viewer.setMouseNavEnabled(false);
         var delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
+        var deg = viewer.viewport.getRotation();
+        var pp = rotate(0, 0, delta.x, delta.y, deg);
+        delta.x = pp[0];
+        delta.y = pp[1];
         var end = this.viewer.viewport.pointFromPixel(e.position, true);
         var start = new $.Point(end.x - delta.x, end.y - delta.y);
         if (!this.rect) {
@@ -341,10 +349,12 @@
                 oldRect = this.rect.clone();
             }
             if (this.rectDone) {
-                // rotate
-                var angle1 = this.rect.getAngleFromCenter(start);
-                var angle2 = this.rect.getAngleFromCenter(end);
-                this.rect.rotation = (this.rect.rotation + angle1 - angle2) % Math.PI;
+                if (this.allowRotation) {
+                    // rotate
+                    var angle1 = this.rect.getAngleFromCenter(start);
+                    var angle2 = this.rect.getAngleFromCenter(end);
+                    this.rect.rotation = (this.rect.rotation + angle1 - angle2) % Math.PI;
+                }
             } else {
                 if (this.startRotated) {
                     this.rect = getPrerotatedRect(this.rotatedStartPoint, end, this.startRotatedHeight);
@@ -393,15 +403,15 @@
         var rotation = this.rect.getDegreeRotation();
         var center;
         var oldRect = this.restrictToImage ? this.rect.clone() : null;
-        if (rotation !== 0) {
-            // adjust vector
-            delta = delta.rotate(-1 * rotation, new $.Point(0, 0));
-            center = this.rect.getCenter();
-        }
         delta = this.viewer.viewport.deltaPointsFromPixels(delta, true);
+        var pp = rotate(0, 0, delta.x, delta.y, -rotation);
+        delta.x = pp[0];
+        delta.y = pp[1];
         switch (border) {
             case 0:
-                this.rect.y += delta.y;
+                var _pp = [delta.y * Math.cos(-this.rect.rotation), delta.y * Math.sin(-this.rect.rotation)];
+                this.rect.x += _pp[1];
+                this.rect.y += _pp[0];
                 this.rect.height -= delta.y;
                 break;
             case 1:
@@ -411,17 +421,25 @@
                 this.rect.height += delta.y;
                 break;
             case 3:
-                this.rect.x += delta.x;
+                var _pp = [delta.x * Math.cos(-this.rect.rotation), delta.x * Math.sin(-this.rect.rotation)];
+                this.rect.x += _pp[0];
+                this.rect.y -= _pp[1];
                 this.rect.width -= delta.x;
                 break;
             case 0.5:
-                this.rect.y += delta.y;
+                var _pp = [delta.y * Math.cos(-this.rect.rotation), delta.y * Math.sin(-this.rect.rotation)];
+                this.rect.x += _pp[1];
+                this.rect.y += _pp[0];
                 this.rect.height -= delta.y;
-                this.rect.x += delta.x;
+                _pp = [delta.x * Math.cos(-this.rect.rotation), delta.x * Math.sin(-this.rect.rotation)];
+                this.rect.x += _pp[0];
+                this.rect.y -= _pp[1];
                 this.rect.width -= delta.x;
                 break;
             case 1.5:
-                this.rect.y += delta.y;
+                var _pp = [delta.y * Math.cos(-this.rect.rotation), delta.y * Math.sin(-this.rect.rotation)];
+                this.rect.x += _pp[1];
+                this.rect.y += _pp[0];
                 this.rect.height -= delta.y;
                 this.rect.width += delta.x;
                 break;
@@ -431,19 +449,11 @@
                 break;
             case 3.5:
                 this.rect.height += delta.y;
-                this.rect.x += delta.x;
+                var _pp = [delta.x * Math.cos(-this.rect.rotation), delta.x * Math.sin(-this.rect.rotation)];
+                this.rect.x += _pp[0];
+                this.rect.y -= _pp[1];
                 this.rect.width -= delta.x;
                 break;
-        }
-        if (rotation !== 0) {
-            // calc center deviation
-            var newCenter = this.rect.getCenter();
-            // rotate new center around old
-            var target = newCenter.rotate(rotation, center);
-            // adjust new center
-            delta = target.minus(newCenter);
-            this.rect.x += delta.x;
-            this.rect.y += delta.y;
         }
         var bounds = this.viewer.world.getHomeBounds();
         if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, bounds.width, bounds.height))) {
