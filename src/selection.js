@@ -42,7 +42,10 @@
             startRotated:            false, // useful for rotated crops
             startRotatedHeight:      0.1,
             restrictToImage:         false,
-            onSelection:             null,
+            onSelectionConfirmed:    null,
+            onSelectionCanceled:     null,
+            onSelectionChange:       null,
+            onSelectionToggled:      null,
             prefixUrl:               null,
             navImages:               {
                 selection: {
@@ -246,7 +249,10 @@
             }
         }
 
-        this.viewer.addHandler('selection', this.onSelection);
+        this.viewer.addHandler('selection', this.onSelectionConfirmed);
+        this.viewer.addHandler('selection_cancel', this.onSelectionCanceled);
+        this.viewer.addHandler('selection_change', this.onSelectionChange);
+        this.viewer.addHandler('selection_toggle', this.onSelectionToggled);
 
         this.viewer.addHandler('open', this.draw.bind(this));
         this.viewer.addHandler('animation', this.draw.bind(this));
@@ -285,6 +291,7 @@
                 this.overlay.update(this.rect.normalize());
                 this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
             }
+            this.viewer.raiseEvent('selection_change', this.rect ? this.rect.normalize() : null);
             return this;
         },
 
