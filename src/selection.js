@@ -63,7 +63,23 @@
                     HOVER:  'selection_cancel_hover.png',
                     DOWN:   'selection_cancel_pressed.png'
                 },
+            },
+            handleStyle: {
+                top:        '50%',
+                left:       '50%',
+                width:      '6px',
+                height:     '6px',
+                margin:     '-4px 0 0 -4px',
+                background: '#000',
+                border:     '1px solid #ccc'
+            },
+            cornersStyle: {
+                width:      '6px',
+                height:     '6px',
+                background: '#000',
+                border:     '1px solid #ccc'
             }
+
         }, options );
 
         $.extend( true, this.navImages, this.viewer.navImages );
@@ -89,13 +105,13 @@
             handle                  = $.makeNeutralElement('div');
             handle.className        = 'border-' + i + '-handle';
             handle.style.position   = 'absolute';
-            handle.style.top        = '50%';
-            handle.style.left       = '50%';
-            handle.style.width      = '6px';
-            handle.style.height     = '6px';
-            handle.style.margin     = '-4px 0 0 -4px';
-            handle.style.background = '#000';
-            handle.style.border     = '1px solid #ccc';
+            handle.style.top        = this.handleStyle.top;
+            handle.style.left       = this.handleStyle.left;
+            handle.style.width      = this.handleStyle.width;
+            handle.style.height     = this.handleStyle.height;
+            handle.style.margin     = this.handleStyle.margin;
+            handle.style.background = this.handleStyle.background;
+            handle.style.border     = this.handleStyle.border;
             new $.MouseTracker({
                 element:     this.borders[i],
                 dragHandler: onBorderDrag.bind(this, i),
@@ -104,10 +120,10 @@
             corners[i]                  = $.makeNeutralElement('div');
             corners[i].className        = 'corner-' + i + '-handle';
             corners[i].style.position   = 'absolute';
-            corners[i].style.width      = '6px';
-            corners[i].style.height     = '6px';
-            corners[i].style.background = '#000';
-            corners[i].style.border     = '1px solid #ccc';
+            corners[i].style.width      = this.cornersStyle.width;
+            corners[i].style.height     = this.cornersStyle.height;
+            corners[i].style.background = this.cornersStyle.background;
+            corners[i].style.border     = this.cornersStyle.border;
             new $.MouseTracker({
                 element:     corners[i],
                 dragHandler: onBorderDrag.bind(this, i + 0.5),
