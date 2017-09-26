@@ -39,6 +39,7 @@
             returnPixelCoordinates:  true,
             keyboardShortcut:        'c',
             rect:                    null,
+            allowRotation:           true,
             startRotated:            false, // useful for rotated crops
             startRotatedHeight:      0.1,
             restrictToImage:         false,
@@ -357,10 +358,12 @@
                 oldRect = this.rect.clone();
             }
             if (this.rectDone) {
-                // rotate
-                var angle1 = this.rect.getAngleFromCenter(start);
-                var angle2 = this.rect.getAngleFromCenter(end);
-                this.rect.rotation = (this.rect.rotation + angle1 - angle2) % Math.PI;
+                // All rotation as needed.
+                if (this.allowRotation) {
+                    var angle1 = this.rect.getAngleFromCenter(start);
+                    var angle2 = this.rect.getAngleFromCenter(end);
+                    this.rect.rotation = (this.rect.rotation + angle1 - angle2) % Math.PI;
+                }
             } else {
                 if (this.startRotated) {
                     this.rect = getPrerotatedRect(this.rotatedStartPoint, end, this.startRotatedHeight);
