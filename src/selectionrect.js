@@ -114,21 +114,42 @@
         },
 
         /**
-         * Fixes negative width/height, rotation larger than PI
+         * Fixes negative width/height, rotation larger than PI. Supports rotated viewer.
          * @function
          * @returns {SelectionRect} The normalized rect
          */
-        normalize: function() {
+        normalize: function () {
             var fixed = this.clone();
+            fixed.rotation %= 2 * Math.PI;
+
             if (fixed.width < 0) {
-                fixed.x += fixed.width;
+                // old code
+                //fixed.x += fixed.width;
+                //fixed.width *= -1;
+
+                // new code
+                // pp stores the x portion and the y portion of the width in the unrotated coordinate system.
+                var pp = [fixed.width * Math.cos(-fixed.rotation), fixed.width * Math.sin(-fixed.rotation)];
+
+                fixed.x += pp[0];
+                fixed.y -= pp[1];
+
                 fixed.width *= -1;
             }
             if (fixed.height < 0) {
-                fixed.y += fixed.height;
+                // old code
+                //fixed.y += fixed.height;
+                //fixed.height *= -1;
+
+                // new code
+                // pp stores the x portion and the y portion of the height in the unrotated coordinate system.
+                var pp = [fixed.height * Math.cos(-fixed.rotation), fixed.height * Math.sin(-fixed.rotation)];
+
+                fixed.x += pp[1];
+                fixed.y += pp[0];
+
                 fixed.height *= -1;
             }
-            fixed.rotation %= Math.PI;
             return fixed;
         },
 
