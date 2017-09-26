@@ -318,12 +318,21 @@
             return this.undraw();
         },
     });
+    
+    function rotate(cx, cy, x, y, degrees) {
+        var radians = degrees * (Math.PI / 180),
+            cos = Math.cos(radians),
+            sin = Math.sin(radians),
+            x_rot = cos * (x - cx) - sin * (y - cy) + cx,
+            y_rot = sin * (x - cx) + cos * (y - cy) + cy;
+        return [x_rot, y_rot];
+    }
 
     function onOutsideDrag(e) {
         // Disable move when makeing new selection
         this.viewer.setMouseNavEnabled(false);
         var delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
-        var deg = viewer.viewport.getRotation();
+        var deg = this.viewer.viewport.getRotation();
         var pp = rotate(0, 0, delta.x, delta.y, deg);
         delta.x = pp[0];
         delta.y = pp[1];
