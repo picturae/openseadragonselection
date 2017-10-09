@@ -289,6 +289,10 @@
             return this;
         },
 
+        setAllowRotation: function(allowRotation) {
+            this.allowRotation = allowRotation;
+        },
+
         enable: function() {
             return this.setState(true);
         },
