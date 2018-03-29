@@ -14,7 +14,6 @@
         return this.selectionInstance;
     };
 
-
     /**
     * @class Selection
     * @classdesc Provides functionality for selecting part of an image
@@ -385,6 +384,17 @@
     }
 
     function onOutsideDragEnd() {
+        // Resizing a selection will function
+        // when drawn any direction
+        if (this.rect.width < 0){
+            this.rect.x += this.rect.width;
+            this.rect.width = Math.abs(this.rect.width);
+        }
+        if (this.rect.height < 0){
+            this.rect.y += this.rect.height;
+            this.rect.height = Math.abs(this.rect.height);
+        }
+        
         // Eable move after new selection is done
         this.viewer.setMouseNavEnabled(true);
         this.rectDone = true;
