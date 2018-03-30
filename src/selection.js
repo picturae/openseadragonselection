@@ -14,6 +14,7 @@
         return this.selectionInstance;
     };
 
+
     /**
     * @class Selection
     * @classdesc Provides functionality for selecting part of an image
