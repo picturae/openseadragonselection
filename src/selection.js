@@ -116,6 +116,7 @@
             new $.MouseTracker({
                 element:     this.borders[i],
                 dragHandler: onBorderDrag.bind(this, i),
+                dragEndHandler: onBorderDragEnd.bind(this, i),
             });
 
             corners[i]                  = $.makeNeutralElement('div');
@@ -128,6 +129,7 @@
             new $.MouseTracker({
                 element:     corners[i],
                 dragHandler: onBorderDrag.bind(this, i + 0.5),
+                dragEndHandler: onBorderDragEnd.bind(this, i),
             });
 
             this.borders[i].appendChild(handle);
@@ -385,6 +387,17 @@
     }
 
     function onOutsideDragEnd() {
+        // Resizing a selection will function
+        // when drawn any direction
+        if (this.rect.width < 0){
+            this.rect.x += this.rect.width;
+            this.rect.width = Math.abs(this.rect.width);
+        }
+        if (this.rect.height < 0){
+            this.rect.y += this.rect.height;
+            this.rect.height = Math.abs(this.rect.height);
+        }
+        
         // Eable move after new selection is done
         this.viewer.setMouseNavEnabled(true);
         this.rectDone = true;
@@ -473,6 +486,19 @@
             this.rect = oldRect;
         }
         this.draw();
+    }
+    
+    // After you have completed dragging, ensure the top left of the selection
+    // box is still the top left corner of the box
+    function onBorderDragEnd(){
+        if (this.rect.width < 0){
+            this.rect.x += this.rect.width;
+            this.rect.width = Math.abs(this.rect.width);
+        }
+        if (this.rect.height < 0){
+            this.rect.y += this.rect.height;
+            this.rect.height = Math.abs(this.rect.height);
+        }
     }
 
     function onKeyPress(e) {
