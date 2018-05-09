@@ -333,6 +333,8 @@
         },
 
         cancel: function() {
+            this.outerTracker.setTracking(false);
+            this.outerTracker.setTracking(true);
             this.viewer.raiseEvent('selection_cancel', false);
             return this.undraw();
         },
