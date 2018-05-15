@@ -239,7 +239,7 @@
                 element:    this.cancelButton ? $.getElement( this.cancelButton ) : null,
                 clickTimeThreshold: this.viewer.clickTimeThreshold,
                 clickDistThreshold: this.viewer.clickDistThreshold,
-                tooltip:    $.getString('Tooltips.SelectionConfirm') || 'Cancel selection',
+                tooltip:    $.getString('Tooltips.SelectionCancel') || 'Cancel selection',
                 srcRest:    prefix + this.navImages.selectionCancel.REST,
                 srcGroup:   prefix + this.navImages.selectionCancel.GROUP,
                 srcHover:   prefix + this.navImages.selectionCancel.HOVER,
