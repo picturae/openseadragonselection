@@ -333,6 +333,12 @@
         },
 
         cancel: function() {
+            /*
+             * These two lines have been added to fix a issue with mobile where the selection is just a pinpoint after the first drag
+             * For some reason disabling then re-enabling the tracking fixes this issue.
+             */
+            this.outerTracker.setTracking(false);
+            this.outerTracker.setTracking(true);
             this.viewer.raiseEvent('selection_cancel', false);
             return this.undraw();
         },
