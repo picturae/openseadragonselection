@@ -65,6 +65,10 @@
                     DOWN:   'selection_cancel_pressed.png'
                 },
             },
+            borderStyle: {
+                width:      '1px',
+                color:      '#fff'
+            },
             handleStyle: {
                 top:        '50%',
                 left:       '50%',
@@ -98,9 +102,9 @@
                 this.borders[i]                  = $.makeNeutralElement('div');
                 this.borders[i].className        = 'border-' + i;
                 this.borders[i].style.position   = 'absolute';
-                this.borders[i].style.width      = '1px';
-                this.borders[i].style.height     = '1px';
-                this.borders[i].style.background = '#fff';
+                this.borders[i].style.width      = this.borderStyle.width;
+                this.borders[i].style.height     = this.borderStyle.width;
+                this.borders[i].style.background = this.borderStyle.color;
             }
 
             handle                  = $.makeNeutralElement('div');

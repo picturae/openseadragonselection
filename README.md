@@ -54,6 +54,25 @@ Then you can alter the selection state with any of these:
                 HOVER:  'selection_cancel_hover.png',
                 DOWN:   'selection_cancel_pressed.png'
             },
+        },
+        borderStyle: { // overwriteable style defaults
+            width:      '1px',
+            color:      '#fff'
+        },
+        handleStyle: {
+            top:        '50%',
+            left:       '50%',
+            width:      '6px',
+            height:     '6px',
+            margin:     '-4px 0 0 -4px',
+            background: '#000',
+            border:     '1px solid #ccc'
+        },
+        cornersStyle: {
+            width:      '6px',
+            height:     '6px',
+            background: '#000',
+            border:     '1px solid #ccc'
         }
     });
 
