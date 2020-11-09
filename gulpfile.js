@@ -3,7 +3,7 @@
 var gulp = require('gulp');
 var plugins = require('gulp-load-plugins')();
 
-gulp.task('uglify', function() {
+gulp.task('uglify', gulp.series(function() {
     return gulp.src([
             './src/*.js',
         ])
@@ -17,18 +17,18 @@ gulp.task('uglify', function() {
         .pipe(plugins.uglify())
         .pipe(plugins.sourcemaps.write('./'))
         .pipe(gulp.dest('./dist'));
-});
-
-gulp.task('watch', ['uglify'], function () {
-    gulp.watch('./src/*.js', ['uglify']);
-});
-
-gulp.task('serve', plugins.serve({
-    root: ['dist', 'images'],
-    port: 4040,
 }));
 
-gulp.task('default', ['watch', 'serve']);
+gulp.task('watch', gulp.series('uglify', function () {
+    gulp.watch('./src/*.js', ['uglify']);
+}));
+
+gulp.task('serve', gulp.series(plugins.serve({
+    root: ['dist', 'images'],
+    port: 4040,
+})));
+
+gulp.task('default', gulp.series('watch', 'serve'));
 
 
 /**

@@ -2,8 +2,13 @@
   "name": "openseadragonselection",
   "version": "1.1.1",
   "description": "An OpenSeadragon plugin to allow selecting part of the zoomable image and getting the corresponding coordinates.",
-  "main": "selection.js",
-  "scripts": {},
+  "main": "dist/openseadragonselection.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "gulp uglify"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/picturae/openseadragonselection.git"
@@ -19,18 +24,18 @@
     "url": "https://github.com/picturae/openseadragonselection/issues"
   },
   "homepage": "https://github.com/picturae/openseadragonselection#readme",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
-    "gulp": "^3.9.0",
-    "gulp-concat": "^2.6.0",
-    "gulp-jshint": "^1.11.2",
-    "gulp-load-plugins": "^0.10.0",
-    "gulp-plumber": "^1.0.1",
-    "gulp-serve": "^1.2.0",
-    "gulp-sourcemaps": "^1.6.0",
-    "gulp-uglify": "^1.4.2",
-    "gulp-util": "^3.0.6",
-    "jshint-stylish": "^2.0.1"
+    "gulp": "^4.0.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-jshint": "^2.1.0",
+    "gulp-load-plugins": "^2.0.5",
+    "gulp-plumber": "^1.2.1",
+    "gulp-serve": "^1.4.0",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-uglify": "^3.0.2",
+    "gulp-util": "^3.0.8",
+    "jshint-stylish": "^2.2.1",
+    "jshint": "^2.12.0"
   }
 }
