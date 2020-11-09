@@ -1,3 +1,5 @@
+var OpenSeadragon = require('openseadragon');
+
 (function($) {
     'use strict';
 

@@ -33,7 +33,10 @@ Then you can alter the selection state with any of these:
         startRotated:            false, // alternative method for drawing the selection; useful for rotated crops
         startRotatedHeight:      0.1, // only used if startRotated=true; value is relative to image height
         restrictToImage:         false, // true = do not allow any part of the selection to be outside the image
-        onSelection:             function(rect) {}, // callback
+        onSelectionConfirmed:    function(rect) {}, // callback,
+        onSelectionCanceled:     function(false) {}, // callback,
+        onSelectionChange:       function(rect) {}, // callback,
+        onSelectionToggled:      function({enabled: boolean}) {}, // callback,
         prefixUrl:               null, // overwrites OpenSeadragon's option
         navImages:               { // overwrites OpenSeadragon's options
             selection: {
