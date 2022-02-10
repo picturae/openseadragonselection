@@ -39,9 +39,9 @@
             returnPixelCoordinates:  true,
             keyboardShortcut:        'c',
             rect:                    null,
+            allowRotation:           true,
             startRotated:            false, // useful for rotated crops
             startRotatedHeight:      0.1,
-            allowRotation:           true,
             restrictToImage:         false,
             onSelection:             null,
             prefixUrl:               null,
@@ -64,7 +64,27 @@
                     HOVER:  'selection_cancel_hover.png',
                     DOWN:   'selection_cancel_pressed.png'
                 },
+            },
+            borderStyle: {
+                width:      '1px',
+                color:      '#fff'
+            },
+            handleStyle: {
+                top:        '50%',
+                left:       '50%',
+                width:      '6px',
+                height:     '6px',
+                margin:     '-4px 0 0 -4px',
+                background: '#000',
+                border:     '1px solid #ccc'
+            },
+            cornersStyle: {
+                width:      '6px',
+                height:     '6px',
+                background: '#000',
+                border:     '1px solid #ccc'
             }
+
         }, options );
 
         $.extend( true, this.navImages, this.viewer.navImages );
@@ -82,36 +102,38 @@
                 this.borders[i]                  = $.makeNeutralElement('div');
                 this.borders[i].className        = 'border-' + i;
                 this.borders[i].style.position   = 'absolute';
-                this.borders[i].style.width      = '1px';
-                this.borders[i].style.height     = '1px';
-                this.borders[i].style.background = '#fff';
+                this.borders[i].style.width      = this.borderStyle.width;
+                this.borders[i].style.height     = this.borderStyle.width;
+                this.borders[i].style.background = this.borderStyle.color;
             }
 
             handle                  = $.makeNeutralElement('div');
             handle.className        = 'border-' + i + '-handle';
             handle.style.position   = 'absolute';
-            handle.style.top        = '50%';
-            handle.style.left       = '50%';
-            handle.style.width      = '6px';
-            handle.style.height     = '6px';
-            handle.style.margin     = '-4px 0 0 -4px';
-            handle.style.background = '#000';
-            handle.style.border     = '1px solid #ccc';
+            handle.style.top        = this.handleStyle.top;
+            handle.style.left       = this.handleStyle.left;
+            handle.style.width      = this.handleStyle.width;
+            handle.style.height     = this.handleStyle.height;
+            handle.style.margin     = this.handleStyle.margin;
+            handle.style.background = this.handleStyle.background;
+            handle.style.border     = this.handleStyle.border;
             new $.MouseTracker({
                 element:     this.borders[i],
                 dragHandler: onBorderDrag.bind(this, i),
+                dragEndHandler: onBorderDragEnd.bind(this, i),
             });
 
             corners[i]                  = $.makeNeutralElement('div');
             corners[i].className        = 'corner-' + i + '-handle';
             corners[i].style.position   = 'absolute';
-            corners[i].style.width      = '6px';
-            corners[i].style.height     = '6px';
-            corners[i].style.background = '#000';
-            corners[i].style.border     = '1px solid #ccc';
+            corners[i].style.width      = this.cornersStyle.width;
+            corners[i].style.height     = this.cornersStyle.height;
+            corners[i].style.background = this.cornersStyle.background;
+            corners[i].style.border     = this.cornersStyle.border;
             new $.MouseTracker({
                 element:     corners[i],
                 dragHandler: onBorderDrag.bind(this, i + 0.5),
+                dragEndHandler: onBorderDragEnd.bind(this, i),
             });
 
             this.borders[i].appendChild(handle);
@@ -221,7 +243,7 @@
                 element:    this.cancelButton ? $.getElement( this.cancelButton ) : null,
                 clickTimeThreshold: this.viewer.clickTimeThreshold,
                 clickDistThreshold: this.viewer.clickDistThreshold,
-                tooltip:    $.getString('Tooltips.SelectionConfirm') || 'Cancel selection',
+                tooltip:    $.getString('Tooltips.SelectionCancel') || 'Cancel selection',
                 srcRest:    prefix + this.navImages.selectionCancel.REST,
                 srcGroup:   prefix + this.navImages.selectionCancel.GROUP,
                 srcHover:   prefix + this.navImages.selectionCancel.HOVER,
@@ -273,6 +295,10 @@
             return this;
         },
 
+        setAllowRotation: function(allowRotation) {
+            this.allowRotation = allowRotation;
+        },
+
         enable: function() {
             return this.setState(true);
         },
@@ -283,9 +309,6 @@
 
         draw: function() {
             if (this.rect) {
-                var deg = viewer.viewport.getRotation();
-                var rad = Math.PI * deg / 180;
-                this.rect.rotation = -rad;
                 this.overlay.update(this.rect.normalize());
                 this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
             }
@@ -314,28 +337,21 @@
         },
 
         cancel: function() {
+            /*
+             * These two lines have been added to fix a issue with mobile where the selection is just a pinpoint after the first drag
+             * For some reason disabling then re-enabling the tracking fixes this issue.
+             */
+            this.outerTracker.setTracking(false);
+            this.outerTracker.setTracking(true);
             this.viewer.raiseEvent('selection_cancel', false);
             return this.undraw();
         },
     });
-    
-    function rotate(cx, cy, x, y, degrees) {
-        var radians = degrees * (Math.PI / 180),
-            cos = Math.cos(radians),
-            sin = Math.sin(radians),
-            x_rot = cos * (x - cx) - sin * (y - cy) + cx,
-            y_rot = sin * (x - cx) + cos * (y - cy) + cy;
-        return [x_rot, y_rot];
-    }
 
     function onOutsideDrag(e) {
         // Disable move when makeing new selection
         this.viewer.setMouseNavEnabled(false);
         var delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
-        var deg = this.viewer.viewport.getRotation();
-        var pp = rotate(0, 0, delta.x, delta.y, deg);
-        delta.x = pp[0];
-        delta.y = pp[1];
         var end = this.viewer.viewport.pointFromPixel(e.position, true);
         var start = new $.Point(end.x - delta.x, end.y - delta.y);
         if (!this.rect) {
@@ -358,8 +374,8 @@
                 oldRect = this.rect.clone();
             }
             if (this.rectDone) {
+                // All rotation as needed.
                 if (this.allowRotation) {
-                    // rotate
                     var angle1 = this.rect.getAngleFromCenter(start);
                     var angle2 = this.rect.getAngleFromCenter(end);
                     this.rect.rotation = (this.rect.rotation + angle1 - angle2) % Math.PI;
@@ -381,6 +397,17 @@
     }
 
     function onOutsideDragEnd() {
+        // Resizing a selection will function
+        // when drawn any direction
+        if (this.rect.width < 0){
+            this.rect.x += this.rect.width;
+            this.rect.width = Math.abs(this.rect.width);
+        }
+        if (this.rect.height < 0){
+            this.rect.y += this.rect.height;
+            this.rect.height = Math.abs(this.rect.height);
+        }
+        
         // Eable move after new selection is done
         this.viewer.setMouseNavEnabled(true);
         this.rectDone = true;
@@ -412,15 +439,15 @@
         var rotation = this.rect.getDegreeRotation();
         var center;
         var oldRect = this.restrictToImage ? this.rect.clone() : null;
+        if (rotation !== 0) {
+            // adjust vector
+            delta = delta.rotate(-1 * rotation, new $.Point(0, 0));
+            center = this.rect.getCenter();
+        }
         delta = this.viewer.viewport.deltaPointsFromPixels(delta, true);
-        var pp = rotate(0, 0, delta.x, delta.y, -rotation);
-        delta.x = pp[0];
-        delta.y = pp[1];
         switch (border) {
             case 0:
-                var _pp = [delta.y * Math.cos(-this.rect.rotation), delta.y * Math.sin(-this.rect.rotation)];
-                this.rect.x += _pp[1];
-                this.rect.y += _pp[0];
+                this.rect.y += delta.y;
                 this.rect.height -= delta.y;
                 break;
             case 1:
@@ -430,25 +457,17 @@
                 this.rect.height += delta.y;
                 break;
             case 3:
-                var _pp = [delta.x * Math.cos(-this.rect.rotation), delta.x * Math.sin(-this.rect.rotation)];
-                this.rect.x += _pp[0];
-                this.rect.y -= _pp[1];
+                this.rect.x += delta.x;
                 this.rect.width -= delta.x;
                 break;
             case 0.5:
-                var _pp = [delta.y * Math.cos(-this.rect.rotation), delta.y * Math.sin(-this.rect.rotation)];
-                this.rect.x += _pp[1];
-                this.rect.y += _pp[0];
+                this.rect.y += delta.y;
                 this.rect.height -= delta.y;
-                _pp = [delta.x * Math.cos(-this.rect.rotation), delta.x * Math.sin(-this.rect.rotation)];
-                this.rect.x += _pp[0];
-                this.rect.y -= _pp[1];
+                this.rect.x += delta.x;
                 this.rect.width -= delta.x;
                 break;
             case 1.5:
-                var _pp = [delta.y * Math.cos(-this.rect.rotation), delta.y * Math.sin(-this.rect.rotation)];
-                this.rect.x += _pp[1];
-                this.rect.y += _pp[0];
+                this.rect.y += delta.y;
                 this.rect.height -= delta.y;
                 this.rect.width += delta.x;
                 break;
@@ -458,17 +477,38 @@
                 break;
             case 3.5:
                 this.rect.height += delta.y;
-                var _pp = [delta.x * Math.cos(-this.rect.rotation), delta.x * Math.sin(-this.rect.rotation)];
-                this.rect.x += _pp[0];
-                this.rect.y -= _pp[1];
+                this.rect.x += delta.x;
                 this.rect.width -= delta.x;
                 break;
+        }
+        if (rotation !== 0) {
+            // calc center deviation
+            var newCenter = this.rect.getCenter();
+            // rotate new center around old
+            var target = newCenter.rotate(rotation, center);
+            // adjust new center
+            delta = target.minus(newCenter);
+            this.rect.x += delta.x;
+            this.rect.y += delta.y;
         }
         var bounds = this.viewer.world.getHomeBounds();
         if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, bounds.width, bounds.height))) {
             this.rect = oldRect;
         }
         this.draw();
+    }
+    
+    // After you have completed dragging, ensure the top left of the selection
+    // box is still the top left corner of the box
+    function onBorderDragEnd(){
+        if (this.rect.width < 0){
+            this.rect.x += this.rect.width;
+            this.rect.width = Math.abs(this.rect.width);
+        }
+        if (this.rect.height < 0){
+            this.rect.y += this.rect.height;
+            this.rect.height = Math.abs(this.rect.height);
+        }
     }
 
     function onKeyPress(e) {
