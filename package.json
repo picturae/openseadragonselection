@@ -21,9 +21,8 @@
     "url": "https://github.com/picturae/openseadragonselection/issues"
   },
   "homepage": "https://github.com/picturae/openseadragonselection#readme",
-  "dependencies": {},
   "devDependencies": {
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-concat": "^2.6.0",
     "gulp-jshint": "^1.11.2",
     "gulp-load-plugins": "^0.10.0",

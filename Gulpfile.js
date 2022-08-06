@@ -19,17 +19,16 @@ gulp.task('uglify', function() {
         .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('watch', ['uglify'], function () {
-    gulp.watch('./src/*.js', ['uglify']);
-});
-
-gulp.task('serve', plugins.serve({
-    root: ['dist', 'images'],
-    port: 4040,
+gulp.task('watch', gulp.series('uglify', function () {
+    gulp.watch('./src/*.js', gulp.series('uglify'));
 }));
 
-gulp.task('default', ['watch', 'serve']);
+gulp.task('serve', plugins.serve({
+        root: ['dist', 'images'],
+        port: 4040,
+}));
 
+gulp.task('default', gulp.series('watch', 'serve'));
 
 /**
  * Displays error message in the console

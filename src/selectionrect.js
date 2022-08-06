@@ -121,6 +121,7 @@
         normalize: function () {
             var fixed = this.clone();
             fixed.rotation %= 2 * Math.PI;
+            var pp;
 
             if (fixed.width < 0) {
                 // old code
@@ -129,7 +130,7 @@
 
                 // new code
                 // pp stores the x portion and the y portion of the width in the unrotated coordinate system.
-                var pp = [fixed.width * Math.cos(-fixed.rotation), fixed.width * Math.sin(-fixed.rotation)];
+                pp = [fixed.width * Math.cos(-fixed.rotation), fixed.width * Math.sin(-fixed.rotation)];
 
                 fixed.x += pp[0];
                 fixed.y -= pp[1];
@@ -143,7 +144,7 @@
 
                 // new code
                 // pp stores the x portion and the y portion of the height in the unrotated coordinate system.
-                var pp = [fixed.height * Math.cos(-fixed.rotation), fixed.height * Math.sin(-fixed.rotation)];
+                pp = [fixed.height * Math.cos(-fixed.rotation), fixed.height * Math.sin(-fixed.rotation)];
 
                 fixed.x += pp[1];
                 fixed.y += pp[0];
