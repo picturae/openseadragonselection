@@ -46,7 +46,10 @@
           cropMinimumSize:         false,
           cropMinimumWidth:        0,
           cropMinimumHeight:       0,
-          onSelection:             null,
+          onSelectionConfirmed:    null,
+          onSelectionCanceled:     null,
+          onSelectionChange:       null,
+          onSelectionToggled:      null,
           prefixUrl:               null,
           navImages:               {
               selection: {
@@ -272,7 +275,10 @@
           }
       }
 
-      this.viewer.addHandler('selection', this.onSelection);
+      this.viewer.addHandler('selection', this.onSelectionConfirmed);
+      this.viewer.addHandler('selection_cancel', this.onSelectionCanceled);
+      this.viewer.addHandler('selection_change', this.onSelectionChange);
+      this.viewer.addHandler('selection_toggle', this.onSelectionToggled);
 
       this.viewer.addHandler('open', this.draw.bind(this));
       this.viewer.addHandler('animation', this.draw.bind(this));
@@ -312,10 +318,14 @@
       },
 
       draw: function() {
-          if (this.rect) {
-              this.overlay.update(this.rect.normalize());
-              this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
-          }
+            if (this.rect) {
+                var deg = this.viewer.viewport.getRotation();
+                var rad = Math.PI * deg / 180;
+                this.rect.rotation = -rad;
+                this.overlay.update(this.rect.normalize());
+                this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
+            }
+            this.viewer.raiseEvent('selection_change', this.rect ? this.rect.normalize() : null);
           return this;
       },
 
@@ -329,8 +339,13 @@
           if (this.rect) {
               var result = this.rect.normalize();
               if (this.returnPixelCoordinates) {
-                  var real = this.viewer.viewport.viewportToImageRectangle(result);
-                  real = $.SelectionRect.fromRect(real).round();
+                var real;
+                if (this.viewer.world.getItemCount() > 0) {
+                    real = this.viewer.world.getItemAt(0).viewportToImageRectangle(result);
+                } else {
+                    real = this.viewer.viewport.viewportToImageRectangle(result);
+                }
+                real = $.SelectionRect.fromRect(real).round();
                   real.rotation = result.rotation;
                   result = real;
               }
@@ -360,11 +375,24 @@
     }
   }
 
+  function rotate(cx, cy, x, y, degrees) {
+        var radians = degrees * (Math.PI / 180),
+            cos = Math.cos(radians),
+            sin = Math.sin(radians),
+            xRot = cos * (x - cx) - sin * (y - cy) + cx,
+            yRot = sin * (x - cx) + cos * (y - cy) + cy;
+        return [xRot, yRot];
+    }
+
   function onOutsideDrag(e) {
       // Disable move when makeing new selection
       this.viewer.setMouseNavEnabled(false);
       var delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
-      var end = this.viewer.viewport.pointFromPixel(e.position, true);
+      var deg = this.viewer.viewport.getRotation();
+        var pp = rotate(0, 0, delta.x, delta.y, deg);
+        delta.x = pp[0];
+        delta.y = pp[1];
+        var end = this.viewer.viewport.pointFromPixel(e.position, true);
       var start = new $.Point(end.x - delta.x, end.y - delta.y);
       if (!this.rect) {
           if (this.restrictToImage) {
@@ -451,17 +479,23 @@
   function onBorderDrag(border, e) {
       var delta = e.delta;
       var rotation = this.rect.getDegreeRotation();
-      var center;
+      //var center;
       var oldRect = (this.restrictToImage || this.cropMinimumSize) ? this.rect.clone() : null;
-      if (rotation !== 0) {
+      /*if (rotation !== 0) {
           // adjust vector
           delta = delta.rotate(-1 * rotation, new $.Point(0, 0));
           center = this.rect.getCenter();
-      }
+      }*/
       delta = this.viewer.viewport.deltaPointsFromPixels(delta, true);
-      switch (border) {
+      var _pp, pp = rotate(0, 0, delta.x, delta.y, -rotation);
+        delta.x = pp[0];
+        delta.y = pp[1];
+        switch (border) {
           case 0:
-              this.rect.y += delta.y;
+              //this.rect.y += delta.y;
+              _pp = [delta.y * Math.cos(-this.rect.rotation), delta.y * Math.sin(-this.rect.rotation)];
+              this.rect.x += _pp[1];
+              this.rect.y += _pp[0];
               this.rect.height -= delta.y;
               break;
           case 1:
@@ -471,17 +505,29 @@
               this.rect.height += delta.y;
               break;
           case 3:
-              this.rect.x += delta.x;
+              //this.rect.x += delta.x;
+              _pp = [delta.x * Math.cos(-this.rect.rotation), delta.x * Math.sin(-this.rect.rotation)];
+              this.rect.x += _pp[0];
+              this.rect.y -= _pp[1];
               this.rect.width -= delta.x;
               break;
           case 0.5:
-              this.rect.y += delta.y;
+              //this.rect.y += delta.y;
+              _pp = [delta.y * Math.cos(-this.rect.rotation), delta.y * Math.sin(-this.rect.rotation)];
+              this.rect.x += _pp[1];
+              this.rect.y += _pp[0];
               this.rect.height -= delta.y;
-              this.rect.x += delta.x;
+              //this.rect.x += delta.x;
+              _pp = [delta.x * Math.cos(-this.rect.rotation), delta.x * Math.sin(-this.rect.rotation)];
+              this.rect.x += _pp[0];
+              this.rect.y -= _pp[1];
               this.rect.width -= delta.x;
               break;
           case 1.5:
-              this.rect.y += delta.y;
+              //this.rect.y += delta.y;
+              _pp = [delta.y * Math.cos(-this.rect.rotation), delta.y * Math.sin(-this.rect.rotation)];
+              this.rect.x += _pp[1];
+              this.rect.y += _pp[0];
               this.rect.height -= delta.y;
               this.rect.width += delta.x;
               break;
@@ -491,11 +537,14 @@
               break;
           case 3.5:
               this.rect.height += delta.y;
-              this.rect.x += delta.x;
+              //this.rect.x += delta.x;
+              _pp = [delta.x * Math.cos(-this.rect.rotation), delta.x * Math.sin(-this.rect.rotation)];
+              this.rect.x += _pp[0];
+              this.rect.y -= _pp[1];
               this.rect.width -= delta.x;
               break;
       }
-      if (rotation !== 0) {
+      /*if (rotation !== 0) {
           // calc center deviation
           var newCenter = this.rect.getCenter();
           // rotate new center around old
@@ -504,7 +553,7 @@
           delta = target.minus(newCenter);
           this.rect.x += delta.x;
           this.rect.y += delta.y;
-      }
+      }*/
       var bounds = this.viewer.world.getHomeBounds();
       if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, bounds.width, bounds.height))) {
           this.rect = oldRect;
