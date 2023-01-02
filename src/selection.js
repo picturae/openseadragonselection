@@ -288,6 +288,7 @@
 
       setState: function(enabled) {
           this.isSelecting = enabled;
+          this.viewer.setMouseNavEnabled(!enabled);
           // this.viewer.innerTracker.setTracking(!enabled);
           this.outerTracker.setTracking(enabled);
           enabled ? this.draw() : this.undraw();
