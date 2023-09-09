@@ -420,7 +420,7 @@
           this.rect.height = Math.abs(this.rect.height);
       }
 
-      // Eable move after new selection is done
+      // Enable move after new selection is done
       this.viewer.setMouseNavEnabled(true);
       this.rectDone = true;
   }
