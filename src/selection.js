@@ -1,3 +1,6 @@
+import "./selectionoverlay.js";
+import "./selectionrect.js";
+
 /**
  * @typedef SelectionPublicOptions
  * @property {HTMLElement=} element HTML element to use for overlay.
@@ -261,9 +264,9 @@ function ($) {
             element: this.viewer.canvas,
             clickTimeThreshold: this.viewer.clickTimeThreshold,
             clickDistThreshold: this.viewer.clickDistThreshold,
-            dragHandler: $.delegate(this, onOutsideDrag),
-            dragEndHandler: $.delegate(this, onOutsideDragEnd),
-            clickHandler: $.delegate(this, onClick),
+            dragHandler: onOutsideDrag.bind(this),
+            dragEndHandler: onOutsideDragEnd.bind(this),
+            clickHandler: onClick.bind(this),
             startDisabled: !this.isSelecting,
         });
 
@@ -373,7 +376,6 @@ function ($) {
 
         setState: function (enabled) {
             this.isSelecting = enabled;
-            // this.viewer.innerTracker.setTracking(!enabled);
             this.outerTracker.setTracking(enabled);
 
             if (enabled) {
@@ -461,30 +463,39 @@ function ($) {
     }
 
     function onOutsideDrag(e) {
+        console.log({ e });
+
         // Disable move when makeing new selection
         this.viewer.setMouseNavEnabled(false);
+
         const delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
         const end = this.viewer.viewport.pointFromPixel(e.position, true);
         const start = new $.Point(end.x - delta.x, end.y - delta.y);
+
         if (!this.rect) {
             if (this.restrictToImage) {
                 if (!pointIsInImage(this, start)) {
                     return;
                 }
+
                 restrictVector(delta, end);
             }
+
             if (this.startRotated) {
                 this.rotatedStartPoint = start;
                 this.rect = getPrerotatedRect(start, end, this.startRotatedHeight);
             } else {
                 this.rect = new $.SelectionRect(start.x, start.y, delta.x, delta.y);
             }
+
             this.rectDone = false;
         } else {
             let oldRect;
+
             if (this.restrictToImage || this.cropMinimumSize) {
                 oldRect = this.rect.clone();
             }
+
             if (this.rectDone) {
                 // All rotation as needed.
                 if (this.allowRotation) {
@@ -500,11 +511,13 @@ function ($) {
                     this.rect.height += delta.y;
                 }
             }
+
             const bounds = this.viewer.world.getHomeBounds();
             if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, bounds.width, bounds.height))) {
                 this.rect = oldRect;
             }
         }
+
         checkMinimumRect(this);
         this.draw();
     }
@@ -527,6 +540,7 @@ function ($) {
     }
 
     function onClick() {
+        console.log("Here");
         this.viewer.canvas.focus();
     }
 

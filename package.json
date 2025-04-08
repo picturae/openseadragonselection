@@ -3,6 +3,10 @@
   "version": "1.1.1",
   "description": "An OpenSeadragon plugin to allow selecting part of the zoomable image and getting the corresponding coordinates.",
   "main": "selection.js",
+  "scripts": {
+    "build": "esbuild --bundle --platform=browser --sourcemap --minify ./src/selection.js --outfile='./dist/openseadragonselection.js'",
+    "dev": "esbuild --bundle --platform=browser ./src/selection.js --outfile='./dist/openseadragonselection.js' --servedir=. --watch"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/picturae/openseadragonselection.git"
@@ -22,18 +26,6 @@
     "openseadragon": "^5.0.1"
   },
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-concat": "^2.6.0",
-    "gulp-jshint": "^1.11.2",
-    "gulp-load-plugins": "^0.10.0",
-    "gulp-plumber": "^1.0.1",
-    "gulp-serve": "^1.2.0",
-    "gulp-sourcemaps": "^1.6.0",
-    "gulp-uglify": "^1.4.2",
-    "gulp-util": "^3.0.6",
-    "jshint-stylish": "^2.0.1"
-  },
-  "resolutions": {
-    "graceful-fs": "^4.2.9"
+    "esbuild": "^0.25.2"
   }
 }
