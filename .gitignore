@@ -2,3 +2,4 @@ node_modules
 /nbproject/private/
 /nbproject/project.xml
 /nbproject/project.properties
+package-lock.json
