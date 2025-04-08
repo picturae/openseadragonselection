@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OpenSeadragonSelection plugin demo</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0/build/openseadragon/openseadragon.min.js"></script>
+  <script src="../dist/openseadragonselection.js"></script>
+</head>
+<body>
+<div id="openseadragon1" style="width: 1200px; height: 1000px;"></div>
+
+<script>
+const viewer = OpenSeadragon({
+    id: "openseadragon1",
+    prefixUrl: "../images/",
+    tileSources: "https://openseadragon.github.io/example-images/highsmith/highsmith.dzi",
+});
+
+const selection = viewer.selection();
+window.selection = selection;
+</script>
+</body>
+</html>
