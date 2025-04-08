@@ -254,26 +254,13 @@ function ($) {
             clickDistThreshold: this.viewer.clickDistThreshold,
             dragHandler: $.delegate(this, onInsideDrag),
             dragEndHandler: $.delegate(this, onInsideDragEnd),
-            // keyHandler:         $.delegate( this, onKeyPress ),
             clickHandler: $.delegate(this, onClick),
-            // scrollHandler:      $.delegate( this.viewer, this.viewer.innerTracker.scrollHandler ),
-            // pinchHandler:       $.delegate( this.viewer, this.viewer.innerTracker.pinchHandler ),
         });
 
 
         this.viewer.addHandler('canvas-click', onClick.bind(this));
         this.viewer.addHandler('canvas-drag', onOutsideDrag.bind(this));
         this.viewer.addHandler('canvas-drag-end', onOutsideDragEnd.bind(this));
-
-        // this.outerTracker = new $.MouseTracker({
-        //     element: this.viewer.canvas,
-        //     clickTimeThreshold: this.viewer.clickTimeThreshold,
-        //     clickDistThreshold: this.viewer.clickDistThreshold,
-        //     dragHandler: onOutsideDrag.bind(this),
-        //     dragEndHandler: onOutsideDragEnd.bind(this),
-        //     clickHandler: onClick.bind(this),
-        //     startDisabled: !this.isSelecting,
-        // });
 
         if (this.keyboardShortcut) {
             $.addEvent(
@@ -381,7 +368,6 @@ function ($) {
 
         setState: function (enabled) {
             this.isSelecting = enabled;
-            // this.outerTracker.setTracking(enabled);
 
             if (enabled) {
                 this.draw();
@@ -444,14 +430,7 @@ function ($) {
         },
 
         cancel: function () {
-            /*
-             * These two lines have been added to fix a issue with mobile where the selection is just a pinpoint after the first drag
-             * For some reason disabling then re-enabling the tracking fixes this issue.
-             */
-            // this.outerTracker.setTracking(false);
-            // this.outerTracker.setTracking(true);
             this.viewer.raiseEvent('selection_cancel', false);
-
             return this.undraw();
         },
     });
@@ -546,7 +525,7 @@ function ($) {
             this.rect.height = Math.abs(this.rect.height);
         }
 
-        // Eable move after new selection is done
+        // Enable move after new selection is done
         this.viewer.setMouseNavEnabled(true);
         this.rectDone = true;
     }
