@@ -1,7 +1,66 @@
-(function ($) {
+/**
+ * @typedef SelectionPublicOptions
+ * @property {HTMLElement=} element HTML element to use for overlay.
+ * @property {boolean} [showSelectionControl=true] Show button to toggle selection mode.
+ * @property {HTMLElement=} toggleButton DOM element to use as toggle button.
+ * @property {boolean} [showConfirmDenyButtons=true]
+ * @property {boolean} [styleConfirmDenyButtons=true]
+ * @property {boolean} [returnPixelCoordinates=true]
+ * @property {string} [keyboardShortcut='c'] Key to toggle selection mode.
+ * @property {SelectionRect=} rect Initial selection as an OpenSeadragon.SelectionRect object.
+ * @property {boolean} [allowRotation=true] Turn selection rotation on or off as needed.
+ * @property {boolean} [startRotated=false] Alternative method for drawing the selection; useful for rotated crops.
+ * @property {number} [startRotatedHeight=0.1] Only used if startRotated=true; value is relative to image height.
+ * @property {boolean} [restrictToImage=false] If set to true the selection cannot be outside the image.
+ * @property {function(SelectionRect)=} onSelection Callback which is called when a selection has been made.
+ * @property {string=} prefixUrl Overwrites OpenSeadragon's option.
+ * @property {string} navImages.selection.REST Sets 'selection' button state image.
+ * @property {string} navImages.selection.GROUP Sets 'selection' button state image.
+ * @property {string} navImages.selection.HOVER Sets 'selection' button state image.
+ * @property {string} navImages.selection.DOWN Sets 'selection' button state image.
+ * @property {string} navImages.selectionConfirm.REST Sets 'selectionConfirm' button state image.
+ * @property {string} navImages.selectionConfirm.GROUP Sets 'selectionConfirm' button state image.
+ * @property {string} navImages.selectionConfirm.HOVER Sets 'selectionConfirm' button state image.
+ * @property {string} navImages.selectionConfirm.DOWN Sets 'selectionConfirm' button state image.
+ * @property {string} navImages.selectionCancel.REST Sets 'selectionCancel' button state image.
+ * @property {string} navImages.selectionCancel.GROUP Sets 'selectionCancel' button state image.
+ * @property {string} navImages.selectionCancel.HOVER Sets 'selectionCancel' button state image.
+ * @property {string} navImages.selectionCancel.DOWN Sets 'selectionCancel' button state image.
+ * @property {string} [bordereStyle.width='1px'] Overrides the default selection border width.
+ * @property {string} [bordereStyle.color='#fff'] Overrides the default selection border color.
+ * @property {string} [handleStyle.top='50%']
+ * @property {string} [handleStyle.left='50%']
+ * @property {string} [handleStyle.width='6px']
+ * @property {string} [handleStyle.height='6px']
+ * @property {string} [handleStyle.margin='-4px 0 0 -4px']
+ * @property {string} [handleStyle.background='#000']
+ * @property {string} [handleStyle.border='1px solid #ccc']
+ * @property {string} [cornerStyle.width='6px']
+ * @property {string} [cornerStyle.height='6px']
+ * @property {string} [cornerStyle.background='#000']
+ * @property {string} [cornerStyle.border='1px solid #ccc']
+ */
+
+/**
+ * @typedef SelectionInternalOptions
+ * @extends SelectionPublicOptions
+ * @property {OpenSeadragon.Viewer} viewer
+ * @property {boolean} isSelecting
+ * @property {boolean} buttonActiveImg
+ * @property {boolean} rectDone
+ */
+
+/**
+ * @typedef {SelectionPublicOptions & SelectionInternalOptions} SelectionOptions
+ */
+
+(/**
+ * @param $ {OpenSeadragon} OpenSeadragon base object.
+ */
+function ($) {
     'use strict';
 
-    if (!$.version || $.version.major < 2) {
+    if (!$.version || $.version.major < 5) {
         throw new Error('This version of OpenSeadragonSelection requires OpenSeadragon version 2.0.0+');
     }
 
@@ -14,15 +73,15 @@
         return this.selectionInstance;
     };
 
-
     /**
      * @class Selection
+     * @extends SelectionOptions
      * @classdesc Provides functionality for selecting part of an image
      * @memberof OpenSeadragon
-     * @param {Object} options
+     * @param {SelectionPublicOptions} options
+     * @this SelectionOptions
      */
     $.Selection = function (options) {
-
         $.extend(true, this, {
             // internal state properties
             viewer: null,
@@ -86,8 +145,7 @@
                 height: '6px',
                 background: '#000',
                 border: '1px solid #ccc'
-            }
-
+            },
         }, options);
 
         $.extend(true, this.navImages, this.viewer.navImages);
