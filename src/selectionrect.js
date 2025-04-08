@@ -8,11 +8,11 @@
      *
      * @memberof OpenSeadragon
      * @extends OpenSeadragon.Rect
-     * @param {Number} x The vector component 'x'.
-     * @param {Number} y The vector component 'y'.
-     * @param {Number} width The vector component 'height'.
-     * @param {Number} height The vector component 'width'.
-     * @param {Number} rotation The rotation in radians
+     * @param {Number} [x=0] The vector component 'x'.
+     * @param {Number} [y=0] The vector component 'y'.
+     * @param {Number} [width=0] The vector component 'height'.
+     * @param {Number} [height=0] The vector component 'width'.
+     * @param {Number} [rotation=0] The rotation in radians
      */
     $.SelectionRect = function (x, y, width, height, rotation) {
         $.Rect.apply(this, [x, y, width, height]);

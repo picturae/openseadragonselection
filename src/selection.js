@@ -2,7 +2,7 @@
  * @typedef SelectionPublicOptions
  * @property {HTMLElement=} element HTML element to use for overlay.
  * @property {boolean} [showSelectionControl=true] Show button to toggle selection mode.
- * @property {HTMLElement=} toggleButton DOM element to use as toggle button.
+ * @property {OpenSeadragon.Button=} toggleButton OpenSeadragon button to use as toggle button.
  * @property {boolean} [showConfirmDenyButtons=true]
  * @property {boolean} [styleConfirmDenyButtons=true]
  * @property {boolean} [returnPixelCoordinates=true]
@@ -12,6 +12,9 @@
  * @property {boolean} [startRotated=false] Alternative method for drawing the selection; useful for rotated crops.
  * @property {number} [startRotatedHeight=0.1] Only used if startRotated=true; value is relative to image height.
  * @property {boolean} [restrictToImage=false] If set to true the selection cannot be outside the image.
+ * @property {boolean} [cropMinimumSize=false] Whether to crop the selection to a minimum size.
+ * @property {number} [cropMinimumWidth=0] The minimum width to crop to when cropMimimumSize is set to true.
+ * @property {number} [cropMinimumHeight=0] The minimum width to crop to when cropMimimumSize is set to true.
  * @property {function(SelectionRect)=} onSelection Callback which is called when a selection has been made.
  * @property {string=} prefixUrl Overwrites OpenSeadragon's option.
  * @property {string} navImages.selection.REST Sets 'selection' button state image.
@@ -26,8 +29,8 @@
  * @property {string} navImages.selectionCancel.GROUP Sets 'selectionCancel' button state image.
  * @property {string} navImages.selectionCancel.HOVER Sets 'selectionCancel' button state image.
  * @property {string} navImages.selectionCancel.DOWN Sets 'selectionCancel' button state image.
- * @property {string} [bordereStyle.width='1px'] Overrides the default selection border width.
- * @property {string} [bordereStyle.color='#fff'] Overrides the default selection border color.
+ * @property {string} [borderStyle.width='1px'] Overrides the default selection border width.
+ * @property {string} [borderStyle.color='#fff'] Overrides the default selection border color.
  * @property {string} [handleStyle.top='50%']
  * @property {string} [handleStyle.left='50%']
  * @property {string} [handleStyle.width='6px']
@@ -35,10 +38,10 @@
  * @property {string} [handleStyle.margin='-4px 0 0 -4px']
  * @property {string} [handleStyle.background='#000']
  * @property {string} [handleStyle.border='1px solid #ccc']
- * @property {string} [cornerStyle.width='6px']
- * @property {string} [cornerStyle.height='6px']
- * @property {string} [cornerStyle.background='#000']
- * @property {string} [cornerStyle.border='1px solid #ccc']
+ * @property {string} [cornersStyle.width='6px']
+ * @property {string} [cornersStyle.height='6px']
+ * @property {string} [cornersStyle.background='#000']
+ * @property {string} [cornersStyle.border='1px solid #ccc']
  */
 
 /**
@@ -46,7 +49,7 @@
  * @extends SelectionPublicOptions
  * @property {OpenSeadragon.Viewer} viewer
  * @property {boolean} isSelecting
- * @property {boolean} buttonActiveImg
+ * @property {Node | false} buttonActiveImg
  * @property {boolean} rectDone
  */
 
@@ -54,8 +57,22 @@
  * @typedef {SelectionPublicOptions & SelectionInternalOptions} SelectionOptions
  */
 
+/**
+ * @class SelectionPlugin
+ * @extends SelectionOptions
+ * @property {function(): SelectionPlugin} toggleState
+ * @property {function(boolean): SelectionPlugin} setState
+ * @property {function(boolean): SelectionPlugin} setAllowRotation
+ * @property {function(): SelectionPlugin} enable
+ * @property {function(): SelectionPlugin} disable
+ * @property {function(): SelectionPlugin} draw
+ * @property {function(): SelectionPlugin} undraw
+ * @property {function(): SelectionPlugin} confirm
+ * @property {function(): SelectionPlugin} cancel
+ */
+
 (/**
- * @param $ {OpenSeadragon} OpenSeadragon base object.
+ * @param {OpenSeadragon} $ OpenSeadragon base object.
  */
 function ($) {
     'use strict';
@@ -74,12 +91,10 @@ function ($) {
     };
 
     /**
-     * @class Selection
-     * @extends SelectionOptions
-     * @classdesc Provides functionality for selecting part of an image
-     * @memberof OpenSeadragon
-     * @param {SelectionPublicOptions} options
-     * @this SelectionOptions
+     * @param {SelectionOptions} options
+     * @memberOf OpenSeadragon
+     * @constructor SelectionPlugin
+     * @this {SelectionPlugin & SelectionOptions}
      */
     $.Selection = function (options) {
         $.extend(true, this, {
@@ -155,10 +170,13 @@ function ($) {
             this.element.style.background = 'rgba(0, 0, 0, 0.1)';
             this.element.className = 'selection-box';
         }
+
         this.borders = this.borders || [];
-        var handle;
-        var corners = [];
-        for (var i = 0; i < 4; i++) {
+
+        let handle;
+        const corners = [];
+
+        for (let i = 0; i < 4; i++) {
             if (!this.borders[i]) {
                 this.borders[i] = $.makeNeutralElement('div');
                 this.borders[i].className = 'border-' + i;
@@ -178,6 +196,7 @@ function ($) {
             handle.style.margin = this.handleStyle.margin;
             handle.style.background = this.handleStyle.background;
             handle.style.border = this.handleStyle.border;
+
             new $.MouseTracker({
                 element: this.borders[i],
                 dragHandler: onBorderDrag.bind(this, i),
@@ -199,9 +218,11 @@ function ($) {
 
             this.borders[i].appendChild(handle);
             this.element.appendChild(this.borders[i]);
+
             // defer corners, so they are appended last
             setTimeout(this.element.appendChild.bind(this.element, corners[i]), 0);
         }
+
         this.borders[0].style.top = 0;
         this.borders[0].style.width = '100%';
         this.borders[1].style.right = 0;
@@ -210,6 +231,7 @@ function ($) {
         this.borders[2].style.width = '100%';
         this.borders[3].style.left = 0;
         this.borders[3].style.height = '100%';
+
         corners[0].style.top = '-3px';
         corners[0].style.left = '-3px';
         corners[1].style.top = '-3px';
@@ -254,11 +276,12 @@ function ($) {
             );
         }
 
-        var prefix = this.prefixUrl || this.viewer.prefixUrl || '';
-        var useGroup = this.viewer.buttons && this.viewer.buttonGroup.buttons;
-        var anyButton = useGroup ? this.viewer.buttonGroup.buttons[0] : null;
-        var onFocusHandler = anyButton ? anyButton.onFocus : null;
-        var onBlurHandler = anyButton ? anyButton.onBlur : null;
+        const prefix = this.prefixUrl || this.viewer.prefixUrl || '';
+        const useGroup = this.viewer.buttons && this.viewer.buttonGroup.buttons;
+        const anyButton = useGroup ? this.viewer.buttonGroup.buttons[0] : null;
+        const onFocusHandler = anyButton ? anyButton.onFocus : null;
+        const onBlurHandler = anyButton ? anyButton.onBlur : null;
+
         if (this.showSelectionControl) {
             this.toggleButton = new $.Button({
                 element: this.toggleButton ? $.getElement(this.toggleButton) : null,
@@ -273,15 +296,18 @@ function ($) {
                 onFocus: onFocusHandler,
                 onBlur: onBlurHandler
             });
+
             if (useGroup) {
                 this.viewer.buttonGroup.buttons.push(this.toggleButton);
                 this.viewer.buttonGroup.element.appendChild(this.toggleButton.element);
             }
+
             if (this.toggleButton.imgDown) {
                 this.buttonActiveImg = this.toggleButton.imgDown.cloneNode(true);
                 this.toggleButton.element.appendChild(this.buttonActiveImg);
             }
         }
+
         if (this.showConfirmDenyButtons) {
             this.confirmButton = new $.Button({
                 element: this.confirmButton ? $.getElement(this.confirmButton) : null,
@@ -296,7 +322,8 @@ function ($) {
                 onFocus: onFocusHandler,
                 onBlur: onBlurHandler
             });
-            var confirm = this.confirmButton.element;
+
+            const confirm = this.confirmButton.element;
             confirm.classList.add('confirm-button');
             this.element.appendChild(confirm);
 
@@ -313,7 +340,8 @@ function ($) {
                 onFocus: onFocusHandler,
                 onBlur: onBlurHandler
             });
-            var cancel = this.cancelButton.element;
+
+            const cancel = this.cancelButton.element;
             cancel.classList.add('cancel-button');
             this.element.appendChild(cancel);
 
@@ -339,7 +367,6 @@ function ($) {
     };
 
     $.extend($.Selection.prototype, $.ControlDock.prototype, /** @lends OpenSeadragon.Selection.prototype */{
-
         toggleState: function () {
             return this.setState(!this.isSelecting);
         },
@@ -348,11 +375,19 @@ function ($) {
             this.isSelecting = enabled;
             // this.viewer.innerTracker.setTracking(!enabled);
             this.outerTracker.setTracking(enabled);
-            enabled ? this.draw() : this.undraw();
+
+            if (enabled) {
+                this.draw();
+            } else {
+                this.undraw();
+            }
+
             if (this.buttonActiveImg) {
                 this.buttonActiveImg.style.visibility = enabled ? 'visible' : 'hidden';
             }
+
             this.viewer.raiseEvent('selection_toggle', { enabled: enabled });
+
             return this;
         },
 
@@ -373,6 +408,7 @@ function ($) {
                 this.overlay.update(this.rect.normalize());
                 this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
             }
+
             return this;
         },
 
@@ -384,16 +420,19 @@ function ($) {
 
         confirm: function () {
             if (this.rect) {
-                var result = this.rect.normalize();
+                let result = this.rect.normalize();
+
                 if (this.returnPixelCoordinates) {
-                    var real = this.viewer.viewport.viewportToImageRectangle(result);
+                    let real = this.viewer.viewport.viewportToImageRectangle(result);
                     real = $.SelectionRect.fromRect(real).round();
                     real.rotation = result.rotation;
                     result = real;
                 }
+
                 this.viewer.raiseEvent('selection', result);
                 this.undraw();
             }
+
             return this;
         },
 
@@ -405,10 +444,14 @@ function ($) {
             this.outerTracker.setTracking(false);
             this.outerTracker.setTracking(true);
             this.viewer.raiseEvent('selection_cancel', false);
+
             return this.undraw();
         },
     });
 
+    /**
+     * @param {SelectionPlugin} self
+     */
     function checkMinimumRect(self) {
         if (self.cropMinimumSize === true) {
             const minPoint = self.viewer.viewport.imageToViewportCoordinates(self.cropMinimumWidth, self.cropMinimumHeight);
@@ -420,9 +463,9 @@ function ($) {
     function onOutsideDrag(e) {
         // Disable move when makeing new selection
         this.viewer.setMouseNavEnabled(false);
-        var delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
-        var end = this.viewer.viewport.pointFromPixel(e.position, true);
-        var start = new $.Point(end.x - delta.x, end.y - delta.y);
+        const delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
+        const end = this.viewer.viewport.pointFromPixel(e.position, true);
+        const start = new $.Point(end.x - delta.x, end.y - delta.y);
         if (!this.rect) {
             if (this.restrictToImage) {
                 if (!pointIsInImage(this, start)) {
@@ -438,15 +481,15 @@ function ($) {
             }
             this.rectDone = false;
         } else {
-            var oldRect;
+            let oldRect;
             if (this.restrictToImage || this.cropMinimumSize) {
                 oldRect = this.rect.clone();
             }
             if (this.rectDone) {
                 // All rotation as needed.
                 if (this.allowRotation) {
-                    var angle1 = this.rect.getAngleFromCenter(start);
-                    var angle2 = this.rect.getAngleFromCenter(end);
+                    const angle1 = this.rect.getAngleFromCenter(start);
+                    const angle2 = this.rect.getAngleFromCenter(end);
                     this.rect.rotation = (this.rect.rotation + angle1 - angle2) % Math.PI;
                 }
             } else {
@@ -457,7 +500,7 @@ function ($) {
                     this.rect.height += delta.y;
                 }
             }
-            var bounds = this.viewer.world.getHomeBounds();
+            const bounds = this.viewer.world.getHomeBounds();
             if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, bounds.width, bounds.height))) {
                 this.rect = oldRect;
             }
@@ -489,10 +532,10 @@ function ($) {
 
     function onInsideDrag(e) {
         $.addClass(this.element, 'dragging');
-        var delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
+        const delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
         this.rect.x += delta.x;
         this.rect.y += delta.y;
-        var bounds = this.viewer.world.getHomeBounds();
+        const bounds = this.viewer.world.getHomeBounds();
         if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, bounds.width, bounds.height))) {
             this.rect.x -= delta.x;
             this.rect.y -= delta.y;
@@ -506,16 +549,20 @@ function ($) {
     }
 
     function onBorderDrag(border, e) {
-        var delta = e.delta;
-        var rotation = this.rect.getDegreeRotation();
-        var center;
-        var oldRect = (this.restrictToImage || this.cropMinimumSize) ? this.rect.clone() : null;
+        const rotation = this.rect.getDegreeRotation();
+        const oldRect = (this.restrictToImage || this.cropMinimumSize) ? this.rect.clone() : null;
+
+        let delta = e.delta;
+        let center;
+
         if (rotation !== 0) {
             // adjust vector
             delta = delta.rotate(-1 * rotation, new $.Point(0, 0));
             center = this.rect.getCenter();
         }
+
         delta = this.viewer.viewport.deltaPointsFromPixels(delta, true);
+
         switch (border) {
             case 0:
                 this.rect.y += delta.y;
@@ -554,15 +601,15 @@ function ($) {
         }
         if (rotation !== 0) {
             // calc center deviation
-            var newCenter = this.rect.getCenter();
+            const newCenter = this.rect.getCenter();
             // rotate new center around old
-            var target = newCenter.rotate(rotation, center);
+            const target = newCenter.rotate(rotation, center);
             // adjust new center
             delta = target.minus(newCenter);
             this.rect.x += delta.x;
             this.rect.y += delta.y;
         }
-        var bounds = this.viewer.world.getHomeBounds();
+        const bounds = this.viewer.world.getHomeBounds();
         if (this.restrictToImage && !this.rect.fitsIn(new $.Rect(0, 0, bounds.width, bounds.height))) {
             this.rect = oldRect;
         }
@@ -584,7 +631,7 @@ function ($) {
     }
 
     function onKeyPress(e) {
-        var key = e.keyCode ? e.keyCode : e.charCode;
+        const key = e.keyCode ? e.keyCode : e.charCode;
         if (key === 13) {
             this.confirm();
         } else if (String.fromCharCode(key) === this.keyboardShortcut) {
@@ -595,39 +642,41 @@ function ($) {
     function getPrerotatedRect(start, end, height) {
         if (start.x > end.x) {
             // always draw left to right
-            var x = start;
+            const x = start;
             start = end;
             end = x;
         }
-        var delta = end.minus(start);
-        var dist = start.distanceTo(end);
-        var angle = -1 * Math.atan2(delta.x, delta.y) + (Math.PI / 2);
-        var center = new $.Point(
+        const delta = end.minus(start);
+        const dist = start.distanceTo(end);
+        const angle = -1 * Math.atan2(delta.x, delta.y) + (Math.PI / 2);
+        const center = new $.Point(
             delta.x / 2 + start.x,
             delta.y / 2 + start.y
         );
-        var rect = new $.SelectionRect(
+        const rect = new $.SelectionRect(
             center.x - (dist / 2),
             center.y - (height / 2),
             dist,
             height,
             angle
         );
-        var heightModDelta = new $.Point(0, height);
+        let heightModDelta = new $.Point(0, height);
         heightModDelta = heightModDelta.rotate(rect.getDegreeRotation(), new $.Point(0, 0));
+
         rect.x += heightModDelta.x / 2;
         rect.y += heightModDelta.y / 2;
+
         return rect;
     }
 
     function pointIsInImage(self, point) {
-        var bounds = self.viewer.world.getHomeBounds();
+        const bounds = self.viewer.world.getHomeBounds();
         return point.x >= 0 && point.x <= bounds.width && point.y >= 0 && point.y <= bounds.height;
     }
 
     function restrictVector(delta, end) {
-        var start;
-        for (var prop in { x: 0, y: 0 }) {
+        let start;
+        for (const prop in { x: 0, y: 0 }) {
             start = end[prop] - delta[prop];
             if (start < 1 && start > 0) {
                 if (end[prop] > 1) {
