@@ -5,7 +5,7 @@
   "main": "selection.js",
   "scripts": {
     "build": "esbuild --bundle --platform=browser --sourcemap --minify ./src/selection.js --outfile='./dist/openseadragonselection.js'",
-    "dev": "esbuild --bundle --platform=browser ./src/selection.js --outfile='./dist/openseadragonselection.js' --servedir=. --watch"
+    "dev": "yarn build --watch --servedir=."
   },
   "repository": {
     "type": "git",

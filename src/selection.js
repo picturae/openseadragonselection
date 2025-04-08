@@ -1,5 +1,5 @@
-import "./selectionoverlay.js";
-import "./selectionrect.js";
+import './selectionoverlay.js';
+import './selectionrect.js';
 
 /**
  * @typedef SelectionPublicOptions
@@ -260,15 +260,20 @@ function ($) {
             // pinchHandler:       $.delegate( this.viewer, this.viewer.innerTracker.pinchHandler ),
         });
 
-        this.outerTracker = new $.MouseTracker({
-            element: this.viewer.canvas,
-            clickTimeThreshold: this.viewer.clickTimeThreshold,
-            clickDistThreshold: this.viewer.clickDistThreshold,
-            dragHandler: onOutsideDrag.bind(this),
-            dragEndHandler: onOutsideDragEnd.bind(this),
-            clickHandler: onClick.bind(this),
-            startDisabled: !this.isSelecting,
-        });
+
+        this.viewer.addHandler('canvas-click', onClick.bind(this));
+        this.viewer.addHandler('canvas-drag', onOutsideDrag.bind(this));
+        this.viewer.addHandler('canvas-drag-end', onOutsideDragEnd.bind(this));
+
+        // this.outerTracker = new $.MouseTracker({
+        //     element: this.viewer.canvas,
+        //     clickTimeThreshold: this.viewer.clickTimeThreshold,
+        //     clickDistThreshold: this.viewer.clickDistThreshold,
+        //     dragHandler: onOutsideDrag.bind(this),
+        //     dragEndHandler: onOutsideDragEnd.bind(this),
+        //     clickHandler: onClick.bind(this),
+        //     startDisabled: !this.isSelecting,
+        // });
 
         if (this.keyboardShortcut) {
             $.addEvent(
@@ -376,7 +381,7 @@ function ($) {
 
         setState: function (enabled) {
             this.isSelecting = enabled;
-            this.outerTracker.setTracking(enabled);
+            // this.outerTracker.setTracking(enabled);
 
             if (enabled) {
                 this.draw();
@@ -443,8 +448,8 @@ function ($) {
              * These two lines have been added to fix a issue with mobile where the selection is just a pinpoint after the first drag
              * For some reason disabling then re-enabling the tracking fixes this issue.
              */
-            this.outerTracker.setTracking(false);
-            this.outerTracker.setTracking(true);
+            // this.outerTracker.setTracking(false);
+            // this.outerTracker.setTracking(true);
             this.viewer.raiseEvent('selection_cancel', false);
 
             return this.undraw();
@@ -463,10 +468,12 @@ function ($) {
     }
 
     function onOutsideDrag(e) {
-        console.log({ e });
+        if (!this.isSelecting) {
+            return;
+        }
 
-        // Disable move when makeing new selection
-        this.viewer.setMouseNavEnabled(false);
+        // Prevent mouse drag from moving the image itself instead of just the selection.
+        e.preventDefaultAction = true;
 
         const delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
         const end = this.viewer.viewport.pointFromPixel(e.position, true);
@@ -523,12 +530,17 @@ function ($) {
     }
 
     function onOutsideDragEnd() {
+        if (this.rect === null) {
+            return;
+        }
+
         // Resizing a selection will function
         // when drawn any direction
         if (this.rect.width < 0) {
             this.rect.x += this.rect.width;
             this.rect.width = Math.abs(this.rect.width);
         }
+
         if (this.rect.height < 0) {
             this.rect.y += this.rect.height;
             this.rect.height = Math.abs(this.rect.height);
@@ -540,7 +552,6 @@ function ($) {
     }
 
     function onClick() {
-        console.log("Here");
         this.viewer.canvas.focus();
     }
 
