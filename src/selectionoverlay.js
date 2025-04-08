@@ -1,4 +1,4 @@
-(function( $ ){
+(function ($) {
     'use strict';
 
     /**
@@ -22,25 +22,25 @@
      * {@link OpenSeadragon.Point} as options.location. It will improve
      * performances but will cause a misalignment if the overlay size changes.
      */
-    $.SelectionOverlay = function( element, location) {
-        $.Overlay.apply( this, arguments );
+    $.SelectionOverlay = function (element, location) {
+        $.Overlay.apply(this, arguments);
 
         // set the rotation in radians
-        if ( $.isPlainObject( element ) ) {
+        if ($.isPlainObject(element)) {
             this.rotation = element.location.rotation || 0;
         } else {
             this.rotation = location.rotation || 0;
         }
     };
 
-    $.SelectionOverlay.prototype = $.extend( Object.create($.Overlay.prototype), {
+    $.SelectionOverlay.prototype = $.extend(Object.create($.Overlay.prototype), {
 
         /**
          * @function
          * @param {Element} container
          */
-        drawHTML: function() {
-            $.Overlay.prototype.drawHTML.apply( this, arguments );
+        drawHTML: function () {
+            $.Overlay.prototype.drawHTML.apply(this, arguments);
             this.style.transform = this.style.transform.replace(/ ?rotate\(.+rad\)/, '') +
                 ' rotate(' + this.rotation + 'rad)';
         },
@@ -50,10 +50,10 @@
          * @param {OpenSeadragon.Point|OpenSeadragon.Rect} location
          * @param {OpenSeadragon.OverlayPlacement} position
          */
-        update: function( location ) {
-            $.Overlay.prototype.update.apply( this, arguments );
+        update: function (location) {
+            $.Overlay.prototype.update.apply(this, arguments);
             this.rotation = location.rotation || 0;
         }
     });
 
-}( OpenSeadragon ));
+}(OpenSeadragon));
