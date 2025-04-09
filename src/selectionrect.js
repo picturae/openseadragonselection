@@ -38,7 +38,7 @@
 
         /**
          * @function
-         * @returns {OpenSeadragon.Rect} a duplicate of this Rect
+         * @returns {SelectionRect} a duplicate of this Rect
          */
         clone: function () {
             return new $.SelectionRect(this.x, this.y, this.width, this.height, this.rotation);
@@ -47,8 +47,8 @@
         /**
          * Determines if two Rectangles have equivalent components.
          * @function
-         * @param {OpenSeadragon.Rect} rectangle The Rectangle to compare to.
-         * @return {Boolean} 'true' if all components are equal, otherwise 'false'.
+         * @param {SelectionRect} other The Rectangle to compare to.
+         * @return {boolean} 'true' if all components are equal, otherwise 'false'.
          */
         equals: function (other) {
             return $.Rect.prototype.equals.apply(this, [other]) &&
@@ -59,7 +59,7 @@
          * Provides a string representation of the rectangle which is useful for
          * debugging.
          * @function
-         * @returns {String} A string representation of the rectangle.
+         * @returns {string} A string representation of the rectangle.
          */
         toString: function () {
             return '[' +
@@ -72,17 +72,20 @@
         },
 
         swapWidthHeight: function () {
-            var swapped = this.clone();
+            const swapped = this.clone();
+
             swapped.width = this.height;
             swapped.height = this.width;
+
             swapped.x += (this.width - this.height) / 2;
             swapped.y += (this.height - this.width) / 2;
+
             return swapped;
         },
 
         /**
          * @function
-         * @returns {Number} The rotaion in degrees
+         * @returns {number} The rotation in degrees
          */
         getDegreeRotation: function () {
             return this.rotation * (180 / Math.PI);
@@ -91,10 +94,10 @@
         /**
          * @function
          * @param {OpenSeadragon.Point} point
-         * @returns {Number} The angle in radians
+         * @returns {number} The angle in radians
          */
         getAngleFromCenter: function (point) {
-            var diff = point.minus(this.getCenter());
+            const diff = point.minus(this.getCenter());
             return Math.atan2(diff.x, diff.y);
         },
 
@@ -114,47 +117,55 @@
         },
 
         /**
-         * Fixes negative width/height, rotation larger than PI
+         * Clones the current rect and fixes negative width/height and rotation larger than PI
          * @function
-         * @returns {SelectionRect} The normalized rect
+         * @returns {SelectionRect} Cloned normalized rect.
          */
         normalize: function () {
-            var fixed = this.clone();
+            const fixed = this.clone();
+
             if (fixed.width < 0) {
                 fixed.x += fixed.width;
                 fixed.width *= -1;
             }
+
             if (fixed.height < 0) {
                 fixed.y += fixed.height;
                 fixed.height *= -1;
             }
+
             fixed.rotation %= Math.PI;
+
             return fixed;
         },
 
         /**
          * @function
          * @param {OpenSeadragon.Rect} area
-         * @returns {Boolean} Does this rect fit in a specified area
+         * @returns {boolean} Does this rect fit in a specified area
          */
         fitsIn: function (area) {
-            var rect = this.normalize();
-            var corners = [
+            const rect = this.normalize();
+
+            const corners = [
                 rect.getTopLeft(),
                 rect.getTopRight(),
                 rect.getBottomRight(),
                 rect.getBottomLeft(),
             ];
-            var center = rect.getCenter();
-            var rotation = rect.getDegreeRotation();
-            var areaEnd = area.getBottomRight();
-            for (var i = 0; i < 4; i++) {
+
+            const center = rect.getCenter();
+            const rotation = rect.getDegreeRotation();
+            const areaEnd = area.getBottomRight();
+
+            for (let i = 0; i < 4; i++) {
                 corners[i] = corners[i].rotate(rotation, center);
                 if (corners[i].x < area.x || corners[i].x > areaEnd.x ||
                     corners[i].y < area.y || corners[i].y > areaEnd.y) {
                     return false;
                 }
             }
+
             return true;
         },
 
@@ -164,7 +175,8 @@
          * @returns {SelectionRect} The altered rect
          */
         reduceRotation: function () {
-            var reduced;
+            let reduced;
+
             if (this.rotation < Math.PI / (-4)) {
                 reduced = this.swapWidthHeight();
                 reduced.rotation += Math.PI / 2;
@@ -174,6 +186,7 @@
             } else {
                 reduced = this.clone();
             }
+
             return reduced;
         },
     });
