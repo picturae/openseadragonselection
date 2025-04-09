@@ -447,12 +447,13 @@ function ($) {
     }
 
     function onOutsideDrag(e) {
+        // Prevent the image itself from moving when a selection is being made. If a selection has been made and
+        // allowRotation is set to false it will allow moving the image instead of rotating the selection.
+        e.preventDefaultAction = this.isSelecting && (this.rect === null || !this.rectDone || this.allowRotation);
+
         if (!this.isSelecting) {
             return;
         }
-
-        // Prevent mouse drag from moving the image itself instead of just the selection.
-        e.preventDefaultAction = true;
 
         const delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
         const end = this.viewer.viewport.pointFromPixel(e.position, true);
