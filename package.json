@@ -1,5 +1,5 @@
 {
-  "name": "openseadragonselection",
+  "name": "@picturae/openseadragonselection",
   "version": "2.1.0",
   "description": "An OpenSeadragon plugin to allow selecting part of the zoomable image and getting the corresponding coordinates.",
   "main": "selection.js",
