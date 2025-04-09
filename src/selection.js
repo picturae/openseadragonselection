@@ -410,7 +410,7 @@ function ($) {
                 this.overlay.update(this.rect.normalize());
                 this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
 
-                this.viewer.raiseEvent('selection_change', this.rect);
+                this.viewer.raiseEvent('selection_change', this.getCurrentRect());
             }
 
             return this;
@@ -424,20 +424,24 @@ function ($) {
 
         confirm: function () {
             if (this.rect) {
-                let result = this.rect.normalize();
-
-                if (this.returnPixelCoordinates) {
-                    let real = this.viewer.viewport.viewportToImageRectangle(result);
-                    real = $.SelectionRect.fromRect(real).round();
-                    real.rotation = result.rotation;
-                    result = real;
-                }
-
-                this.viewer.raiseEvent('selection', result);
+                this.viewer.raiseEvent('selection', this.getCurrentRect());
                 this.undraw();
             }
 
             return this;
+        },
+
+        getCurrentRect: function () {
+            let result = this.rect.normalize();
+
+            if (this.returnPixelCoordinates) {
+                let real = this.viewer.viewport.viewportToImageRectangle(result);
+                real = $.SelectionRect.fromRect(real).round();
+                real.rotation = result.rotation;
+                result = real;
+            }
+
+            return result;
         },
 
         cancel: function () {

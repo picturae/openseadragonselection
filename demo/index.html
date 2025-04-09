@@ -21,6 +21,10 @@ const viewer = OpenSeadragon({
 });
 
 const selection = viewer.selection({
+    onSelectionChange: (rect) => {
+        outputEl.innerHTML = `x: ${rect.x}, y: ${rect.y}, width: ${rect.width}, height: ${rect.height}`;
+    },
+
     /**
      * @param {SelectionRect} rect
      */
