@@ -1,10 +1,12 @@
 # OpenSeadragonSelection
 
-An OpenSeadragon plugin that provides functionality for selecting a rectangular part of an image.
+An OpenSeadragon plugin that provides functionality for selecting a rectangular part of an image. Is tested for
+OpenSeadragon 5.0.1.
 
 ## Demo
 
-https://picturae.github.io/openseadragonselection/
+A demo/test page can be found in the demo directory. To run the demo first clone the project, install the dependencies
+using `yarn` and then run the dev server using `yarn dev`.
 
 ## Usage
 
