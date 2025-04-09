@@ -1,10 +1,12 @@
 # OpenSeadragonSelection
 
-An OpenSeadragon plugin that provides functionality for selecting a rectangular part of an image.
+An OpenSeadragon plugin that provides functionality for selecting a rectangular part of an image. Is tested for
+OpenSeadragon 5.0.1.
 
 ## Demo
 
-https://picturae.github.io/openseadragonselection/
+A demo/test page can be found in the demo directory. To run the demo first clone the project, install the dependencies
+using `yarn` and then run the dev server using `yarn dev`.
 
 ## Usage
 
@@ -29,6 +31,7 @@ Then you can alter the selection state with any of these:
         returnPixelCoordinates:  true,
         keyboardShortcut:        'c', // key to toggle selection mode
         rect:                    null, // initial selection as an OpenSeadragon.SelectionRect object
+        allowRotation:           true, // turn selection rotation on or off as needed
         startRotated:            false, // alternative method for drawing the selection; useful for rotated crops
         startRotatedHeight:      0.1, // only used if startRotated=true; value is relative to image height
         restrictToImage:         false, // true = do not allow any part of the selection to be outside the image
@@ -53,6 +56,25 @@ Then you can alter the selection state with any of these:
                 HOVER:  'selection_cancel_hover.png',
                 DOWN:   'selection_cancel_pressed.png'
             },
+        },
+        borderStyle: { // overwriteable style defaults
+            width:      '1px',
+            color:      '#fff'
+        },
+        handleStyle: {
+            top:        '50%',
+            left:       '50%',
+            width:      '6px',
+            height:     '6px',
+            margin:     '-4px 0 0 -4px',
+            background: '#000',
+            border:     '1px solid #ccc'
+        },
+        cornersStyle: {
+            width:      '6px',
+            height:     '6px',
+            background: '#000',
+            border:     '1px solid #ccc'
         }
     });
 
@@ -62,5 +84,5 @@ Then you can alter the selection state with any of these:
     - test/fix with multiple images at once
 
 ## Fixes
-    - Now selection can be draw over existing selections, make selection in selection. 
+    - Now selection can be draw over existing selections, make selection in selection.
     To achieve that before you were forced to make a selection outside any other selection and move it over.
