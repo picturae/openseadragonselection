@@ -16,9 +16,12 @@ import './selectionrect.js';
  * @property {number} [startRotatedHeight=0.1] Only used if startRotated=true; value is relative to image height.
  * @property {boolean} [restrictToImage=false] If set to true the selection cannot be outside the image.
  * @property {boolean} [cropMinimumSize=false] Whether to crop the selection to a minimum size.
- * @property {number} [cropMinimumWidth=0] The minimum width to crop to when cropMimimumSize is set to true.
- * @property {number} [cropMinimumHeight=0] The minimum width to crop to when cropMimimumSize is set to true.
+ * @property {number} [cropMinimumWidth=0] The minimum width to crop to when cropMinimumSize is set to true.
+ * @property {number} [cropMinimumHeight=0] The minimum width to crop to when cropMinimumSize is set to true.
  * @property {function(SelectionRect)=} onSelection Callback which is called when a selection has been made.
+ * @property {function(false)=} onSelectionCanceled Callback when the selection is cancelled.
+ * @property {function(SelectionRect)=} onSelectionChange Callback when the drawn selection changes.
+ * @property {function({enabled: boolean})=} onSelectionToggled Callback when selection is enabled/disabled.
  * @property {string=} prefixUrl Overwrites OpenSeadragon's option.
  * @property {string} navImages.selection.REST Sets 'selection' button state image.
  * @property {string} navImages.selection.GROUP Sets 'selection' button state image.
@@ -124,6 +127,9 @@ function ($) {
             cropMinimumWidth: 0,
             cropMinimumHeight: 0,
             onSelection: null,
+            onSelectionCanceled: null,
+            onSelectionChange: null,
+            onSelectionToggled: null,
             prefixUrl: null,
             navImages: {
                 selection: {
@@ -354,6 +360,9 @@ function ($) {
         }
 
         this.viewer.addHandler('selection', this.onSelection);
+        this.viewer.addHandler('selection_cancel', this.onSelectionCanceled);
+        this.viewer.addHandler('selection_change', this.onSelectionChange);
+        this.viewer.addHandler('selection_toggle', this.onSelectionToggled);
 
         this.viewer.addHandler('open', this.draw.bind(this));
         this.viewer.addHandler('animation', this.draw.bind(this));
@@ -400,6 +409,8 @@ function ($) {
             if (this.rect) {
                 this.overlay.update(this.rect.normalize());
                 this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
+
+                this.viewer.raiseEvent('selection_change', this.getCurrentRect());
             }
 
             return this;
@@ -413,20 +424,24 @@ function ($) {
 
         confirm: function () {
             if (this.rect) {
-                let result = this.rect.normalize();
-
-                if (this.returnPixelCoordinates) {
-                    let real = this.viewer.viewport.viewportToImageRectangle(result);
-                    real = $.SelectionRect.fromRect(real).round();
-                    real.rotation = result.rotation;
-                    result = real;
-                }
-
-                this.viewer.raiseEvent('selection', result);
+                this.viewer.raiseEvent('selection', this.getCurrentRect());
                 this.undraw();
             }
 
             return this;
+        },
+
+        getCurrentRect: function () {
+            let result = this.rect.normalize();
+
+            if (this.returnPixelCoordinates) {
+                let real = this.viewer.viewport.viewportToImageRectangle(result);
+                real = $.SelectionRect.fromRect(real).round();
+                real.rotation = result.rotation;
+                result = real;
+            }
+
+            return result;
         },
 
         cancel: function () {
