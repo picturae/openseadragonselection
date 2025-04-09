@@ -7,6 +7,9 @@
     "build": "esbuild --bundle --platform=browser --sourcemap --minify ./src/selection.js --outfile='./dist/openseadragonselection.js'",
     "dev": "yarn build --watch --servedir=."
   },
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/picturae/openseadragonselection.git"
