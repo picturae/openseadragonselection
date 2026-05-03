@@ -41,8 +41,8 @@
          */
         drawHTML: function () {
             $.Overlay.prototype.drawHTML.apply(this, arguments);
-            this.style.transform = this.style.transform.replace(/ ?rotate\(.+rad\)/, '') +
-                ' rotate(' + this.rotation + 'rad)';
+            this.style.transform = this.style.transform.replace(/ ?rotate\([^)]*\)/g, '') + 
+            ' rotate(' + this.rotation + 'rad)';
         },
 
         /**
