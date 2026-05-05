@@ -412,6 +412,7 @@ function ($) {
             if (this.rect) {
                 this.overlay.update(this.rect.normalize());
                 this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
+                 this.viewer.raiseEvent('selection_change', this.getCurrentRect());
                 updateSelectionCursors(this);
             }
 
@@ -440,6 +441,19 @@ function ($) {
             }
 
             return this;
+        },
+
+        getCurrentRect: function () {
+            let result = this.rect.normalize();
+
+            if (this.returnPixelCoordinates) {
+                let real = this.viewer.viewport.viewportToImageRectangle(result);
+                real = $.SelectionRect.fromRect(real).round();
+                real.rotation = result.rotation;
+                result = real;
+            }
+
+            return result;
         },
 
         cancel: function () {
