@@ -16,8 +16,8 @@ import './selectionrect.js';
  * @property {number} [startRotatedHeight=0.1] Only used if startRotated=true; value is relative to image height.
  * @property {boolean} [restrictToImage=false] If set to true the selection cannot be outside the image.
  * @property {boolean} [cropMinimumSize=false] Whether to crop the selection to a minimum size.
- * @property {number} [cropMinimumWidth=0] The minimum width to crop to when cropMimimumSize is set to true.
- * @property {number} [cropMinimumHeight=0] The minimum width to crop to when cropMimimumSize is set to true.
+ * @property {number} [cropMinimumWidth=0] The minimum width to crop to when cropMiminumSize is set to true.
+ * @property {number} [cropMinimumHeight=0] The minimum width to crop to when cropMiminumSize is set to true.
  * @property {function(SelectionRect)=} onSelection Callback which is called when a selection has been made.
  * @property {function(false)=} onSelectionCanceled Callback when the selection is cancelled.
  * @property {function(SelectionRect)=} onSelectionChange Callback when the drawn selection changes.
@@ -127,9 +127,9 @@ function ($) {
             cropMinimumWidth: 0,
             cropMinimumHeight: 0,
             onSelection: null,
-                onSelectionCanceled: null,
-                onSelectionChange: null,
-                onSelectionToggled: null,
+            onSelectionCanceled: null,
+            onSelectionChange: null,
+            onSelectionToggled: null,
             prefixUrl: null,
             navImages: {
                 selection: {
