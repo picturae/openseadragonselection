@@ -16,8 +16,8 @@ import './selectionrect.js';
  * @property {number} [startRotatedHeight=0.1] Only used if startRotated=true; value is relative to image height.
  * @property {boolean} [restrictToImage=false] If set to true the selection cannot be outside the image.
  * @property {boolean} [cropMinimumSize=false] Whether to crop the selection to a minimum size.
- * @property {number} [cropMinimumWidth=0] The minimum width to crop to when cropMinimumSize is set to true.
- * @property {number} [cropMinimumHeight=0] The minimum width to crop to when cropMinimumSize is set to true.
+ * @property {number} [cropMinimumWidth=0] The minimum width to crop to when cropMiminumSize is set to true.
+ * @property {number} [cropMinimumHeight=0] The minimum width to crop to when cropMiminumSize is set to true.
  * @property {function(SelectionRect)=} onSelection Callback which is called when a selection has been made.
  * @property {function(false)=} onSelectionCanceled Callback when the selection is cancelled.
  * @property {function(SelectionRect)=} onSelectionChange Callback when the drawn selection changes.
@@ -183,8 +183,8 @@ function ($) {
         this.borders = this.borders || [];
 
         let handle;
-        const corners = [];
-
+        this.corners = this.corners || [];
+        const corners = this.corners;
         for (let i = 0; i < 4; i++) {
             if (!this.borders[i]) {
                 this.borders[i] = $.makeNeutralElement('div');
@@ -326,6 +326,7 @@ function ($) {
 
             const confirm = this.confirmButton.element;
             confirm.classList.add('confirm-button');
+            confirm.style.cursor = 'pointer';
             this.element.appendChild(confirm);
 
             this.cancelButton = new $.Button({
@@ -344,6 +345,7 @@ function ($) {
 
             const cancel = this.cancelButton.element;
             cancel.classList.add('cancel-button');
+            cancel.style.cursor = 'pointer';
             this.element.appendChild(cancel);
 
             if (this.styleConfirmDenyButtons) {
@@ -363,6 +365,7 @@ function ($) {
         this.viewer.addHandler('selection_cancel', this.onSelectionCanceled);
         this.viewer.addHandler('selection_change', this.onSelectionChange);
         this.viewer.addHandler('selection_toggle', this.onSelectionToggled);
+
 
         this.viewer.addHandler('open', this.draw.bind(this));
         this.viewer.addHandler('animation', this.draw.bind(this));
@@ -409,8 +412,8 @@ function ($) {
             if (this.rect) {
                 this.overlay.update(this.rect.normalize());
                 this.overlay.drawHTML(this.viewer.drawer.container, this.viewer.viewport);
-
-                this.viewer.raiseEvent('selection_change', this.getCurrentRect());
+                 this.viewer.raiseEvent('selection_change', this.getCurrentRect());
+                updateSelectionCursors(this);
             }
 
             return this;
@@ -424,7 +427,16 @@ function ($) {
 
         confirm: function () {
             if (this.rect) {
-                this.viewer.raiseEvent('selection', this.getCurrentRect());
+                let result = this.rect.normalize();
+
+                if (this.returnPixelCoordinates) {
+                    let real = this.viewer.viewport.viewportToImageRectangle(result);
+                    real = $.SelectionRect.fromRect(real).round();
+                    real.rotation = result.rotation;
+                    result = real;
+                }
+
+                this.viewer.raiseEvent('selection', result);
                 this.undraw();
             }
 
@@ -462,13 +474,13 @@ function ($) {
     }
 
     function onOutsideDrag(e) {
-        // Prevent the image itself from moving when a selection is being made. If a selection has been made and
-        // allowRotation is set to false it will allow moving the image instead of rotating the selection.
-        e.preventDefaultAction = this.isSelecting && (this.rect === null || !this.rectDone || this.allowRotation);
-
         if (!this.isSelecting) {
             return;
         }
+
+            // Prevent the image itself from moving when a selection is being made. If a selection has been made and
+            // allowRotation is set to false it will allow moving the image instead of rotating the selection.
+            e.preventDefaultAction = this.isSelecting && (this.rect === null || !this.rectDone || this.allowRotation);
 
         const delta = this.viewer.viewport.deltaPointsFromPixels(e.delta, true);
         const end = this.viewer.viewport.pointFromPixel(e.position, true);
@@ -707,6 +719,130 @@ function ($) {
                     end[prop] = 0;
                 }
             }
+        }
+    }
+
+    function positiveModulo(value, length) {
+        return ((value % length) + length) % length;
+    }
+
+    function normalizeDegrees180(degrees) {
+        let normalized = positiveModulo(degrees, 360);
+
+        // Convert 0..360 into -180..180
+        if (normalized >= 180) {
+            normalized -= 360;
+        }
+
+        return normalized;
+    }
+
+    function getCursorShiftForRotation(degrees) {
+        const normalizedDegrees = normalizeDegrees180(degrees);
+
+        // One cursor step every 45 degrees.
+        // Examples:
+        // -22.4..22.4   => 0
+        //  22.5..67.4   => 1
+        //  67.5..112.4  => 2
+        // -22.5..-67.4  => -1
+        // -67.5..-112.4 => -2
+        return Math.round(normalizedDegrees / 45);
+    }
+
+    function updateSelectionCursors(self) {
+        if (!self || !self.element || !self.rect) {
+            return;
+        }
+
+    // Interior drag cursor remains unchanged.
+    self.element.style.cursor = 'move';
+
+        if (!self.borders || self.borders.length !== 4 || !self.corners || self.corners.length !== 4) {
+            return;
+        }
+
+        /*
+            * Marker order used here:
+            *
+            * 0: side-top
+            * 1: corner-upper-right
+            * 2: side-right
+            * 3: corner-lower-right
+            * 4: side-bottom
+            * 5: corner-lower-left
+            * 6: side-left
+            * 7: corner-upper-left
+            *
+            * DOM order in the plugin:
+            * borders[0] = top
+            * borders[1] = right
+            * borders[2] = bottom
+            * borders[3] = left
+            *
+            * corners[0] = upper-left
+            * corners[1] = upper-right
+            * corners[2] = lower-right
+            * corners[3] = lower-left
+            */
+        const markerElements = [
+            self.borders[0],
+            self.corners[1],
+            self.borders[1],
+            self.corners[2],
+            self.borders[2],
+            self.corners[3],
+            self.borders[3],
+            self.corners[0]
+        ];
+
+        const markerNames = [
+            'side-top',
+            'corner-upper-right',
+            'side-right',
+            'corner-lower-right',
+            'side-bottom',
+            'corner-lower-left',
+            'side-left',
+            'corner-upper-left'
+        ];
+
+        const cursorStyles = [
+            'ns-resize',
+            'nesw-resize',
+            'ew-resize',
+            'nwse-resize',
+            'ns-resize',
+            'nesw-resize',
+            'ew-resize',
+            'nwse-resize'
+        ];
+
+        const rawDegrees = self.rect.getDegreeRotation();
+        const normalizedDegrees = normalizeDegrees180(rawDegrees);
+        const shift = getCursorShiftForRotation(rawDegrees);
+
+        for (let i = 0; i < markerElements.length; i++) {
+            const shiftedIndex = positiveModulo(i + shift, cursorStyles.length);
+            markerElements[i].style.cursor = cursorStyles[shiftedIndex];
+        }
+
+        // Optional debug output. Turn on with:
+        // viewer.selectionInstance.debugSelectionCursors = true;
+        // or add debugSelectionCursors: true to viewer.selection({...})
+        if (self.debugSelectionCursors && self._lastCursorShift !== shift) {
+            self._lastCursorShift = shift;
+
+            console.table(markerNames.map((name, i) => {
+                const shiftedIndex = positiveModulo(i + shift, cursorStyles.length);
+
+                return {
+                    marker: name,
+                    rotationDeg: normalizedDegrees.toFixed(2),
+                    shift: shift,
+                    cursor: cursorStyles[shiftedIndex]
+                };
+            }));
         }
     }
 

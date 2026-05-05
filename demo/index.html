@@ -22,14 +22,14 @@ const viewer = OpenSeadragon({
 
 const selection = viewer.selection({
     onSelectionChange: (rect) => {
-        outputEl.innerHTML = `x: ${rect.x}, y: ${rect.y}, width: ${rect.width}, height: ${rect.height}`;
+        outputEl.innerHTML = `Change: x: ${rect.x}, y: ${rect.y}, width: ${rect.width}, height: ${rect.height}, rotation: ${rect.rotation}`;
     },
 
     /**
      * @param {SelectionRect} rect
      */
     onSelection: (rect) => {
-        outputEl.innerHTML = `x: ${rect.x}, y: ${rect.y}, width: ${rect.width}, height: ${rect.height}`;
+        outputEl.innerHTML = `Selection: x: ${rect.x}, y: ${rect.y}, width: ${rect.width}, height: ${rect.height}, rotation: ${rect.rotation}`;
     },
 });
 </script>
